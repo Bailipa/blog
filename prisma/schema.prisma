@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  content     String
+  excerpt     String?
+  coverImage  String?
+  status      String     @default("DRAFT")
+  featured    Boolean    @default(false)
+  viewCount   Int        @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  categoryId  String?
+  category    Category?       @relation(fields: [categoryId], references: [id])
+  tags        PostTag[]
+  translations PostTranslation[]
+
+  @@index([status, publishedAt])
+}
+
+model PostTranslation {
+  id      String @id @default(cuid())
+  postId  String
+  lang    String
+  title   String
+  content String
+  excerpt String?
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, lang])
+}
+
+model Category {
+  id          String @id @default(cuid())
+  name        String @unique
+  slug        String @unique
+  description String?
+  sortOrder   Int    @default(0)
+  posts       Post[]
+}
+
+model Tag {
+  id    String    @id @default(cuid())
+  name  String    @unique
+  slug  String    @unique
+  posts PostTag[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  longDesc    String?
+  url         String
+  repoUrl     String?
+  coverImage  String?
+  techStack   String
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FriendLink {
+  id          String @id @default(cuid())
+  name        String
+  url         String
+  description String?
+  sortOrder   Int    @default(0)
+}
+
+model PageView {
+  id    String @id @default(cuid())
+  path  String
+  date  String
+  count Int    @default(0)
+
+  @@unique([path, date])
+}
+
+model SiteConfig {
+  key   String @id
+  value String
+}
