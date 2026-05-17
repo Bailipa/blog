@@ -51,3 +51,7 @@ logs/
 
 # images
 public/images/
+public/uploads/
+
+# generated
+src/generated/prisma/
