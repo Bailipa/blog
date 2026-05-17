@@ -1,8 +1,22 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { markdownToHtml, extractToc, estimateReadTime } from '@/lib/markdown'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import TableOfContents from '@/components/blog/TableOfContents'
+import { GiscusComments } from '@/components/comments/GiscusComments'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const post = await prisma.post.findUnique({ where: { slug }, select: { title: true, excerpt: true } })
+  if (!post) return {}
+  return {
+    title: post.title,
+    description: post.excerpt || undefined,
+    openGraph: { title: post.title, description: post.excerpt || undefined, type: 'article' },
+  }
+}
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -14,9 +28,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post || post.status !== 'PUBLISHED') notFound()
 
-  const html = await markdownToHtml(post.content)
-  const toc = extractToc(post.content)
-  const readTime = estimateReadTime(post.content)
+  let html = ''
+  let toc: { id: string; text: string; level: number }[] = []
+  let readTime = 0
+  try {
+    html = await markdownToHtml(post.content)
+    toc = extractToc(post.content)
+    readTime = estimateReadTime(post.content)
+  } catch {
+    html = '<p>文章内容解析失败</p>'
+  }
 
   const date = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -24,6 +45,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <article className="blog-post-page">
+      <Link href="/" className="blog-post-back">← 返回首页</Link>
+      {post.coverImage && (
+        <img src={post.coverImage} alt={post.title} className="blog-post-cover" loading="lazy" />
+      )}
       <header className="blog-post-header">
         <div className="blog-post-meta">
           {post.category && <span className="post-tag">{post.category.name}</span>}
@@ -51,6 +76,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <MarkdownRenderer html={html} />
         </div>
       </div>
+
+      <footer className="blog-post-comments">
+        <GiscusComments slug={slug} />
+      </footer>
     </article>
   )
 }

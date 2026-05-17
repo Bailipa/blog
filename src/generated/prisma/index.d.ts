@@ -49,6 +49,11 @@ export type PostTag = $Result.DefaultSelection<Prisma.$PostTagPayload>
  */
 export type Project = $Result.DefaultSelection<Prisma.$ProjectPayload>
 /**
+ * Model Mumble
+ * 
+ */
+export type Mumble = $Result.DefaultSelection<Prisma.$MumblePayload>
+/**
  * Model FriendLink
  * 
  */
@@ -251,6 +256,16 @@ export class PrismaClient<
     * ```
     */
   get project(): Prisma.ProjectDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.mumble`: Exposes CRUD operations for the **Mumble** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Mumbles
+    * const mumbles = await prisma.mumble.findMany()
+    * ```
+    */
+  get mumble(): Prisma.MumbleDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.friendLink`: Exposes CRUD operations for the **FriendLink** model.
@@ -729,6 +744,7 @@ export namespace Prisma {
     Tag: 'Tag',
     PostTag: 'PostTag',
     Project: 'Project',
+    Mumble: 'Mumble',
     FriendLink: 'FriendLink',
     PageView: 'PageView',
     SiteConfig: 'SiteConfig'
@@ -750,7 +766,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "post" | "postTranslation" | "category" | "tag" | "postTag" | "project" | "friendLink" | "pageView" | "siteConfig"
+      modelProps: "user" | "post" | "postTranslation" | "category" | "tag" | "postTag" | "project" | "mumble" | "friendLink" | "pageView" | "siteConfig"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1272,6 +1288,80 @@ export namespace Prisma {
           }
         }
       }
+      Mumble: {
+        payload: Prisma.$MumblePayload<ExtArgs>
+        fields: Prisma.MumbleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MumbleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MumbleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          findFirst: {
+            args: Prisma.MumbleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MumbleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          findMany: {
+            args: Prisma.MumbleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>[]
+          }
+          create: {
+            args: Prisma.MumbleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          createMany: {
+            args: Prisma.MumbleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MumbleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>[]
+          }
+          delete: {
+            args: Prisma.MumbleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          update: {
+            args: Prisma.MumbleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          deleteMany: {
+            args: Prisma.MumbleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MumbleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MumbleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>[]
+          }
+          upsert: {
+            args: Prisma.MumbleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MumblePayload>
+          }
+          aggregate: {
+            args: Prisma.MumbleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMumble>
+          }
+          groupBy: {
+            args: Prisma.MumbleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MumbleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MumbleCountArgs<ExtArgs>
+            result: $Utils.Optional<MumbleCountAggregateOutputType> | number
+          }
+        }
+      }
       FriendLink: {
         payload: Prisma.$FriendLinkPayload<ExtArgs>
         fields: Prisma.FriendLinkFieldRefs
@@ -1597,6 +1687,7 @@ export namespace Prisma {
     tag?: TagOmit
     postTag?: PostTagOmit
     project?: ProjectOmit
+    mumble?: MumbleOmit
     friendLink?: FriendLinkOmit
     pageView?: PageViewOmit
     siteConfig?: SiteConfigOmit
@@ -9415,6 +9506,973 @@ export namespace Prisma {
 
 
   /**
+   * Model Mumble
+   */
+
+  export type AggregateMumble = {
+    _count: MumbleCountAggregateOutputType | null
+    _min: MumbleMinAggregateOutputType | null
+    _max: MumbleMaxAggregateOutputType | null
+  }
+
+  export type MumbleMinAggregateOutputType = {
+    id: string | null
+    content: string | null
+    createdAt: Date | null
+  }
+
+  export type MumbleMaxAggregateOutputType = {
+    id: string | null
+    content: string | null
+    createdAt: Date | null
+  }
+
+  export type MumbleCountAggregateOutputType = {
+    id: number
+    content: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type MumbleMinAggregateInputType = {
+    id?: true
+    content?: true
+    createdAt?: true
+  }
+
+  export type MumbleMaxAggregateInputType = {
+    id?: true
+    content?: true
+    createdAt?: true
+  }
+
+  export type MumbleCountAggregateInputType = {
+    id?: true
+    content?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type MumbleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Mumble to aggregate.
+     */
+    where?: MumbleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Mumbles to fetch.
+     */
+    orderBy?: MumbleOrderByWithRelationInput | MumbleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MumbleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Mumbles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Mumbles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Mumbles
+    **/
+    _count?: true | MumbleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MumbleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MumbleMaxAggregateInputType
+  }
+
+  export type GetMumbleAggregateType<T extends MumbleAggregateArgs> = {
+        [P in keyof T & keyof AggregateMumble]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMumble[P]>
+      : GetScalarType<T[P], AggregateMumble[P]>
+  }
+
+
+
+
+  export type MumbleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MumbleWhereInput
+    orderBy?: MumbleOrderByWithAggregationInput | MumbleOrderByWithAggregationInput[]
+    by: MumbleScalarFieldEnum[] | MumbleScalarFieldEnum
+    having?: MumbleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MumbleCountAggregateInputType | true
+    _min?: MumbleMinAggregateInputType
+    _max?: MumbleMaxAggregateInputType
+  }
+
+  export type MumbleGroupByOutputType = {
+    id: string
+    content: string
+    createdAt: Date
+    _count: MumbleCountAggregateOutputType | null
+    _min: MumbleMinAggregateOutputType | null
+    _max: MumbleMaxAggregateOutputType | null
+  }
+
+  type GetMumbleGroupByPayload<T extends MumbleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MumbleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MumbleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MumbleGroupByOutputType[P]>
+            : GetScalarType<T[P], MumbleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MumbleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    content?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["mumble"]>
+
+  export type MumbleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    content?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["mumble"]>
+
+  export type MumbleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    content?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["mumble"]>
+
+  export type MumbleSelectScalar = {
+    id?: boolean
+    content?: boolean
+    createdAt?: boolean
+  }
+
+  export type MumbleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "content" | "createdAt", ExtArgs["result"]["mumble"]>
+
+  export type $MumblePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Mumble"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      content: string
+      createdAt: Date
+    }, ExtArgs["result"]["mumble"]>
+    composites: {}
+  }
+
+  type MumbleGetPayload<S extends boolean | null | undefined | MumbleDefaultArgs> = $Result.GetResult<Prisma.$MumblePayload, S>
+
+  type MumbleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MumbleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MumbleCountAggregateInputType | true
+    }
+
+  export interface MumbleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Mumble'], meta: { name: 'Mumble' } }
+    /**
+     * Find zero or one Mumble that matches the filter.
+     * @param {MumbleFindUniqueArgs} args - Arguments to find a Mumble
+     * @example
+     * // Get one Mumble
+     * const mumble = await prisma.mumble.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MumbleFindUniqueArgs>(args: SelectSubset<T, MumbleFindUniqueArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Mumble that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MumbleFindUniqueOrThrowArgs} args - Arguments to find a Mumble
+     * @example
+     * // Get one Mumble
+     * const mumble = await prisma.mumble.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MumbleFindUniqueOrThrowArgs>(args: SelectSubset<T, MumbleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Mumble that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleFindFirstArgs} args - Arguments to find a Mumble
+     * @example
+     * // Get one Mumble
+     * const mumble = await prisma.mumble.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MumbleFindFirstArgs>(args?: SelectSubset<T, MumbleFindFirstArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Mumble that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleFindFirstOrThrowArgs} args - Arguments to find a Mumble
+     * @example
+     * // Get one Mumble
+     * const mumble = await prisma.mumble.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MumbleFindFirstOrThrowArgs>(args?: SelectSubset<T, MumbleFindFirstOrThrowArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Mumbles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Mumbles
+     * const mumbles = await prisma.mumble.findMany()
+     * 
+     * // Get first 10 Mumbles
+     * const mumbles = await prisma.mumble.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mumbleWithIdOnly = await prisma.mumble.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MumbleFindManyArgs>(args?: SelectSubset<T, MumbleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Mumble.
+     * @param {MumbleCreateArgs} args - Arguments to create a Mumble.
+     * @example
+     * // Create one Mumble
+     * const Mumble = await prisma.mumble.create({
+     *   data: {
+     *     // ... data to create a Mumble
+     *   }
+     * })
+     * 
+     */
+    create<T extends MumbleCreateArgs>(args: SelectSubset<T, MumbleCreateArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Mumbles.
+     * @param {MumbleCreateManyArgs} args - Arguments to create many Mumbles.
+     * @example
+     * // Create many Mumbles
+     * const mumble = await prisma.mumble.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MumbleCreateManyArgs>(args?: SelectSubset<T, MumbleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Mumbles and returns the data saved in the database.
+     * @param {MumbleCreateManyAndReturnArgs} args - Arguments to create many Mumbles.
+     * @example
+     * // Create many Mumbles
+     * const mumble = await prisma.mumble.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Mumbles and only return the `id`
+     * const mumbleWithIdOnly = await prisma.mumble.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MumbleCreateManyAndReturnArgs>(args?: SelectSubset<T, MumbleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Mumble.
+     * @param {MumbleDeleteArgs} args - Arguments to delete one Mumble.
+     * @example
+     * // Delete one Mumble
+     * const Mumble = await prisma.mumble.delete({
+     *   where: {
+     *     // ... filter to delete one Mumble
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MumbleDeleteArgs>(args: SelectSubset<T, MumbleDeleteArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Mumble.
+     * @param {MumbleUpdateArgs} args - Arguments to update one Mumble.
+     * @example
+     * // Update one Mumble
+     * const mumble = await prisma.mumble.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MumbleUpdateArgs>(args: SelectSubset<T, MumbleUpdateArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Mumbles.
+     * @param {MumbleDeleteManyArgs} args - Arguments to filter Mumbles to delete.
+     * @example
+     * // Delete a few Mumbles
+     * const { count } = await prisma.mumble.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MumbleDeleteManyArgs>(args?: SelectSubset<T, MumbleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Mumbles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Mumbles
+     * const mumble = await prisma.mumble.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MumbleUpdateManyArgs>(args: SelectSubset<T, MumbleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Mumbles and returns the data updated in the database.
+     * @param {MumbleUpdateManyAndReturnArgs} args - Arguments to update many Mumbles.
+     * @example
+     * // Update many Mumbles
+     * const mumble = await prisma.mumble.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Mumbles and only return the `id`
+     * const mumbleWithIdOnly = await prisma.mumble.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MumbleUpdateManyAndReturnArgs>(args: SelectSubset<T, MumbleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Mumble.
+     * @param {MumbleUpsertArgs} args - Arguments to update or create a Mumble.
+     * @example
+     * // Update or create a Mumble
+     * const mumble = await prisma.mumble.upsert({
+     *   create: {
+     *     // ... data to create a Mumble
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Mumble we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MumbleUpsertArgs>(args: SelectSubset<T, MumbleUpsertArgs<ExtArgs>>): Prisma__MumbleClient<$Result.GetResult<Prisma.$MumblePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Mumbles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleCountArgs} args - Arguments to filter Mumbles to count.
+     * @example
+     * // Count the number of Mumbles
+     * const count = await prisma.mumble.count({
+     *   where: {
+     *     // ... the filter for the Mumbles we want to count
+     *   }
+     * })
+    **/
+    count<T extends MumbleCountArgs>(
+      args?: Subset<T, MumbleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MumbleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Mumble.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MumbleAggregateArgs>(args: Subset<T, MumbleAggregateArgs>): Prisma.PrismaPromise<GetMumbleAggregateType<T>>
+
+    /**
+     * Group by Mumble.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MumbleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MumbleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MumbleGroupByArgs['orderBy'] }
+        : { orderBy?: MumbleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MumbleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMumbleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Mumble model
+   */
+  readonly fields: MumbleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Mumble.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MumbleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Mumble model
+   */
+  interface MumbleFieldRefs {
+    readonly id: FieldRef<"Mumble", 'String'>
+    readonly content: FieldRef<"Mumble", 'String'>
+    readonly createdAt: FieldRef<"Mumble", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Mumble findUnique
+   */
+  export type MumbleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter, which Mumble to fetch.
+     */
+    where: MumbleWhereUniqueInput
+  }
+
+  /**
+   * Mumble findUniqueOrThrow
+   */
+  export type MumbleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter, which Mumble to fetch.
+     */
+    where: MumbleWhereUniqueInput
+  }
+
+  /**
+   * Mumble findFirst
+   */
+  export type MumbleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter, which Mumble to fetch.
+     */
+    where?: MumbleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Mumbles to fetch.
+     */
+    orderBy?: MumbleOrderByWithRelationInput | MumbleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Mumbles.
+     */
+    cursor?: MumbleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Mumbles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Mumbles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Mumbles.
+     */
+    distinct?: MumbleScalarFieldEnum | MumbleScalarFieldEnum[]
+  }
+
+  /**
+   * Mumble findFirstOrThrow
+   */
+  export type MumbleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter, which Mumble to fetch.
+     */
+    where?: MumbleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Mumbles to fetch.
+     */
+    orderBy?: MumbleOrderByWithRelationInput | MumbleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Mumbles.
+     */
+    cursor?: MumbleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Mumbles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Mumbles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Mumbles.
+     */
+    distinct?: MumbleScalarFieldEnum | MumbleScalarFieldEnum[]
+  }
+
+  /**
+   * Mumble findMany
+   */
+  export type MumbleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter, which Mumbles to fetch.
+     */
+    where?: MumbleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Mumbles to fetch.
+     */
+    orderBy?: MumbleOrderByWithRelationInput | MumbleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Mumbles.
+     */
+    cursor?: MumbleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Mumbles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Mumbles.
+     */
+    skip?: number
+    distinct?: MumbleScalarFieldEnum | MumbleScalarFieldEnum[]
+  }
+
+  /**
+   * Mumble create
+   */
+  export type MumbleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Mumble.
+     */
+    data: XOR<MumbleCreateInput, MumbleUncheckedCreateInput>
+  }
+
+  /**
+   * Mumble createMany
+   */
+  export type MumbleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Mumbles.
+     */
+    data: MumbleCreateManyInput | MumbleCreateManyInput[]
+  }
+
+  /**
+   * Mumble createManyAndReturn
+   */
+  export type MumbleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * The data used to create many Mumbles.
+     */
+    data: MumbleCreateManyInput | MumbleCreateManyInput[]
+  }
+
+  /**
+   * Mumble update
+   */
+  export type MumbleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Mumble.
+     */
+    data: XOR<MumbleUpdateInput, MumbleUncheckedUpdateInput>
+    /**
+     * Choose, which Mumble to update.
+     */
+    where: MumbleWhereUniqueInput
+  }
+
+  /**
+   * Mumble updateMany
+   */
+  export type MumbleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Mumbles.
+     */
+    data: XOR<MumbleUpdateManyMutationInput, MumbleUncheckedUpdateManyInput>
+    /**
+     * Filter which Mumbles to update
+     */
+    where?: MumbleWhereInput
+    /**
+     * Limit how many Mumbles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Mumble updateManyAndReturn
+   */
+  export type MumbleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * The data used to update Mumbles.
+     */
+    data: XOR<MumbleUpdateManyMutationInput, MumbleUncheckedUpdateManyInput>
+    /**
+     * Filter which Mumbles to update
+     */
+    where?: MumbleWhereInput
+    /**
+     * Limit how many Mumbles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Mumble upsert
+   */
+  export type MumbleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Mumble to update in case it exists.
+     */
+    where: MumbleWhereUniqueInput
+    /**
+     * In case the Mumble found by the `where` argument doesn't exist, create a new Mumble with this data.
+     */
+    create: XOR<MumbleCreateInput, MumbleUncheckedCreateInput>
+    /**
+     * In case the Mumble was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MumbleUpdateInput, MumbleUncheckedUpdateInput>
+  }
+
+  /**
+   * Mumble delete
+   */
+  export type MumbleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+    /**
+     * Filter which Mumble to delete.
+     */
+    where: MumbleWhereUniqueInput
+  }
+
+  /**
+   * Mumble deleteMany
+   */
+  export type MumbleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Mumbles to delete
+     */
+    where?: MumbleWhereInput
+    /**
+     * Limit how many Mumbles to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Mumble without action
+   */
+  export type MumbleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Mumble
+     */
+    select?: MumbleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Mumble
+     */
+    omit?: MumbleOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model FriendLink
    */
 
@@ -12509,6 +13567,15 @@ export namespace Prisma {
   export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
 
 
+  export const MumbleScalarFieldEnum: {
+    id: 'id',
+    content: 'content',
+    createdAt: 'createdAt'
+  };
+
+  export type MumbleScalarFieldEnum = (typeof MumbleScalarFieldEnum)[keyof typeof MumbleScalarFieldEnum]
+
+
   export const FriendLinkScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -13051,6 +14118,48 @@ export namespace Prisma {
     sortOrder?: IntWithAggregatesFilter<"Project"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
+  }
+
+  export type MumbleWhereInput = {
+    AND?: MumbleWhereInput | MumbleWhereInput[]
+    OR?: MumbleWhereInput[]
+    NOT?: MumbleWhereInput | MumbleWhereInput[]
+    id?: StringFilter<"Mumble"> | string
+    content?: StringFilter<"Mumble"> | string
+    createdAt?: DateTimeFilter<"Mumble"> | Date | string
+  }
+
+  export type MumbleOrderByWithRelationInput = {
+    id?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MumbleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MumbleWhereInput | MumbleWhereInput[]
+    OR?: MumbleWhereInput[]
+    NOT?: MumbleWhereInput | MumbleWhereInput[]
+    content?: StringFilter<"Mumble"> | string
+    createdAt?: DateTimeFilter<"Mumble"> | Date | string
+  }, "id">
+
+  export type MumbleOrderByWithAggregationInput = {
+    id?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    _count?: MumbleCountOrderByAggregateInput
+    _max?: MumbleMaxOrderByAggregateInput
+    _min?: MumbleMinOrderByAggregateInput
+  }
+
+  export type MumbleScalarWhereWithAggregatesInput = {
+    AND?: MumbleScalarWhereWithAggregatesInput | MumbleScalarWhereWithAggregatesInput[]
+    OR?: MumbleScalarWhereWithAggregatesInput[]
+    NOT?: MumbleScalarWhereWithAggregatesInput | MumbleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Mumble"> | string
+    content?: StringWithAggregatesFilter<"Mumble"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Mumble"> | Date | string
   }
 
   export type FriendLinkWhereInput = {
@@ -13683,6 +14792,48 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MumbleCreateInput = {
+    id?: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type MumbleUncheckedCreateInput = {
+    id?: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type MumbleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MumbleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MumbleCreateManyInput = {
+    id?: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type MumbleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MumbleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FriendLinkCreateInput = {
     id?: string
     name: string
@@ -14261,6 +15412,24 @@ export namespace Prisma {
 
   export type ProjectSumOrderByAggregateInput = {
     sortOrder?: SortOrder
+  }
+
+  export type MumbleCountOrderByAggregateInput = {
+    id?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MumbleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MumbleMinOrderByAggregateInput = {
+    id?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type FriendLinkCountOrderByAggregateInput = {

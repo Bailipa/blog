@@ -1,9 +1,16 @@
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import remarkRehype from 'remark-rehype'
+import rehypeHighlight from 'rehype-highlight'
+import rehypeStringify from 'rehype-stringify'
 
 export async function markdownToHtml(md: string): Promise<string> {
-  const result = await remark().use(remarkGfm).use(remarkHtml).process(md)
+  const result = await remark()
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
+    .process(md)
   return result.toString()
 }
 

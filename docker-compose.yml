@@ -1,0 +1,18 @@
+services:
+  blog-app:
+    build: .
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - LOG_LEVEL=info
+    volumes:
+      - blog-data:/app/prisma
+    restart: unless-stopped
+
+volumes:
+  blog-data:

@@ -1,0 +1,33 @@
+import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+export const runtime = 'nodejs'
+import { auth } from '@/lib/auth'
+import { apiErrorHandler } from '@/lib/apiErrorHandler'
+
+export async function GET() {
+  try {
+    const tags = await prisma.tag.findMany({
+      orderBy: { name: 'asc' },
+    })
+    return NextResponse.json({ data: tags })
+  } catch (err) {
+    const { status, body } = apiErrorHandler(err)
+    return NextResponse.json(body, { status })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const tag = await prisma.tag.create({ data: body })
+    return NextResponse.json({ data: tag }, { status: 201 })
+  } catch (err) {
+    const { status, body } = apiErrorHandler(err)
+    return NextResponse.json(body, { status })
+  }
+}

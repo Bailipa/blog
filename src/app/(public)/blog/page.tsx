@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import PostCard from '@/components/blog/PostCard'
 import prisma from '@/lib/prisma'
+import PostCard from '@/components/blog/PostCard'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 12
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const params = await searchParams

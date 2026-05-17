@@ -186,6 +186,12 @@ exports.Prisma.ProjectScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MumbleScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.FriendLinkScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -225,6 +231,7 @@ exports.Prisma.ModelName = {
   Tag: 'Tag',
   PostTag: 'PostTag',
   Project: 'Project',
+  Mumble: 'Mumble',
   FriendLink: 'FriendLink',
   PageView: 'PageView',
   SiteConfig: 'SiteConfig'

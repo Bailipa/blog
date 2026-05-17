@@ -17,21 +17,19 @@ export default function CosmicHero() {
     if (!svg) return
     const ns = 'http://www.w3.org/2000/svg'
 
-    // --- 1. Rings: inside → out ---
     const allRings = Array.from(svg.querySelectorAll('.breathe-1, .breathe-2, .breathe-3, .breathe-4, .breathe-5, .breathe-6, .breathe-7, .taiji-halo'))
     allRings.sort((a, b) => parseFloat(a.getAttribute('r') || '0') - parseFloat(b.getAttribute('r') || '0'))
     const rings = [allRings[0]].concat(allRings.slice(-7)).filter(Boolean)
     rings.forEach((circle, i) => {
       const wrapper = document.createElementNS(ns, 'g')
-      wrapper.setAttribute('class', 'ring-boot')
+      wrapper.setAttribute('class', 'hr-boot')
       wrapper.style.animationDelay = `${0.1 + i * 0.08}s`
       wrapper.style.opacity = '0'
       circle.parentNode?.insertBefore(wrapper, circle)
       wrapper.appendChild(circle)
     })
 
-    // --- 2. Text rings & trigrams ---
-    const bootChars = Array.from(svg.querySelectorAll('.ring-1 .yao-stroke, .ring-4 .yao-stroke, .ring-2 text, .ring-3 text, .ring-5 text, .ring-6 text, .ring-7 text, .ring-1 line, .ring-2 line, .ring-3 line, .ring-4 line, .ring-5 line, .ring-6 line, .ring-7 line'))
+    const bootChars = Array.from(svg.querySelectorAll('.hr-1 .yao-stroke, .hr-4 .yao-stroke, .hr-2 text, .hr-3 text, .hr-5 text, .hr-6 text, .hr-7 text, .hr-1 line, .hr-2 line, .hr-3 line, .hr-4 line, .hr-5 line, .hr-6 line, .hr-7 line'))
     const t0 = setTimeout(() => {
       bootChars.forEach(el => {
         (el as SVGElement).style.transition = 'opacity 0.6s ease-out 0.1s'
@@ -39,7 +37,6 @@ export default function CosmicHero() {
       })
     }, 800)
 
-    // --- 3. Taiji group ---
     const taiji = document.querySelector('.taiji-group')
     if (taiji) {
       const w = document.createElementNS(ns, 'g')
@@ -49,7 +46,6 @@ export default function CosmicHero() {
       w.appendChild(taiji)
     }
 
-    // --- 4. Taiji halos ---
     svg.querySelectorAll('.taiji-halo').forEach(h => {
       if (parseFloat(h.getAttribute('r') || '0') <= 60) return
       const w = document.createElementNS(ns, 'g')
@@ -59,7 +55,6 @@ export default function CosmicHero() {
       w.appendChild(h)
     })
 
-    // --- 5. Reveal timeline ---
     const t1 = setTimeout(() => setHeroRightRevealed(true), 100)
     const t2 = setTimeout(() => setHeroLeftRevealed(true), 1500)
     const t3 = setTimeout(() => setNavRevealed(true), 1900)
@@ -67,7 +62,7 @@ export default function CosmicHero() {
     // ===== Mouse Parallax =====
     const ringWrappers: SVGGElement[] = []
     for (let ri = 1; ri <= 7; ri++) {
-      const r = document.querySelector(`.ring-${ri}`)
+      const r = document.querySelector(`.hr-${ri}`)
       if (r) {
         const wrapper = document.createElementNS(ns, 'g')
         r.parentNode?.insertBefore(wrapper, r)
@@ -85,15 +80,12 @@ export default function CosmicHero() {
 
     let targetX = 0, targetY = 0
     let currentX = 0, currentY = 0
-    let mouseCX = 0, mouseCY = 0
 
     const onMouseMove = (e: MouseEvent) => {
       const cx = window.innerWidth / 2
       const cy = window.innerHeight / 2
       targetX = (e.clientX - cx) / cx
       targetY = (e.clientY - cy) / cy
-      mouseCX = e.clientX
-      mouseCY = e.clientY
     }
 
     const onMouseLeave = () => {
@@ -112,18 +104,6 @@ export default function CosmicHero() {
         const strength = 1 - i * 0.1
         wr.setAttribute('transform', `translate(${currentX * 26 * strength}, ${currentY * 18 * strength})`)
       })
-
-      const spot = document.getElementById('heroSpotlight')
-      if (spot) {
-        spot.style.setProperty('--mx', `${(mouseCX / window.innerWidth) * 100}%`)
-        spot.style.setProperty('--my', `${(mouseCY / window.innerHeight) * 100}%`)
-      }
-
-      const ps = document.getElementById('pageSpotlight')
-      if (ps) {
-        ps.style.setProperty('--mx', `${(mouseCX / window.innerWidth) * 100}%`)
-        ps.style.setProperty('--my', `${(mouseCY / window.innerHeight) * 100}%`)
-      }
 
       rafRef.current = requestAnimationFrame(parallaxLoop)
     }
@@ -153,8 +133,6 @@ export default function CosmicHero() {
       </nav>
 
       <section className="hero snap-page">
-        <div className="hero-spotlight" id="heroSpotlight" />
-
         <div className={`hero-left${heroLeftRevealed ? ' revealed' : ''}`}>
           <div className="hero-tag">探索·创造·分享</div>
           <h1 className="hero-title">辉洋的博客</h1>

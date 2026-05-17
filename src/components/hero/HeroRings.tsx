@@ -32,10 +32,12 @@ const houtian = [
   { yao: [0, 1, 1] as const, name: '巽', symbol: '☴', desc: '齐乎巽，东南之位，随风巽君子以申命行事' },
 ]
 
+const r3 = (n: number) => Number(n.toFixed(3))
+
 function yaoArc(r: number, a1Deg: number, a2Deg: number) {
   const a1 = (a1Deg * Math.PI) / 180
   const a2 = (a2Deg * Math.PI) / 180
-  return `M ${CX + r * Math.cos(a1)} ${CY + r * Math.sin(a1)} A ${r} ${r} 0 0 1 ${CX + r * Math.cos(a2)} ${CY + r * Math.sin(a2)}`
+  return `M ${r3(CX + r * Math.cos(a1))} ${r3(CY + r * Math.sin(a1))} A ${r} ${r} 0 0 1 ${r3(CX + r * Math.cos(a2))} ${r3(CY + r * Math.sin(a2))}`
 }
 
 function Trigram({
@@ -114,10 +116,10 @@ function RingDividers({
     nodes.push(
       <line
         key={i}
-        x1={CX + innerR * Math.cos(midRad)}
-        y1={CY + innerR * Math.sin(midRad)}
-        x2={CX + outerR * Math.cos(midRad)}
-        y2={CY + outerR * Math.sin(midRad)}
+        x1={r3(CX + innerR * Math.cos(midRad))}
+        y1={r3(CY + innerR * Math.sin(midRad))}
+        x2={r3(CX + outerR * Math.cos(midRad))}
+        y2={r3(CY + outerR * Math.sin(midRad))}
         stroke={GOLD_BRIGHT}
         strokeWidth={1.5}
         opacity={0.7}
@@ -153,7 +155,7 @@ function TextLayer({
     const rot = cw ? baseAngle - 90 : baseAngle + 90
 
     nodes.push(
-      <g key={i} transform={`translate(${x},${y}) rotate(${rot})`}>
+        <g key={i} transform={`translate(${r3(x)},${r3(y)}) rotate(${r3(rot)})`}>
         <text
           fontSize={size}
           fill={GOLD_BRIGHT}
@@ -246,7 +248,7 @@ function HeroRings() {
       <circle cx={CX} cy={CY} r={385} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.3} opacity={0.06} />
       <circle cx={CX} cy={CY} r={400} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.25} opacity={0.03} />
 
-      <g className="ring-5" opacity={0.08}>
+      <g className="hr-5" opacity={0.08}>
         <path d="M 1000 450 L 920 100 L 1080 100 Z" fill="url(#centerGlow)" />
         <path d="M 1000 450 L 1350 370 L 1350 530 Z" fill="url(#centerGlow)" />
         <path d="M 1000 450 L 1080 800 L 920 800 Z" fill="url(#centerGlow)" />
@@ -298,7 +300,7 @@ function HeroRings() {
         <circle cx={CX} cy={CY} r={58} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.8} opacity={0.3} />
       </g>
 
-      <g className="ring-1">
+      <g className="hr-1">
         {xiantian.map((t, i) => (
           <Trigram
             key={i}
@@ -314,17 +316,17 @@ function HeroRings() {
         <RingDividers count={8} innerR={310} outerR={340} cw={true} />
       </g>
 
-      <g className="ring-2" filter="url(#glow)">
+      <g className="hr-2" filter="url(#glow)">
         <TextLayer radius={300} chars="子丑寅卯辰巳午未申酉戌亥" size={16} cw={false} />
         <RingDividers count={12} innerR={281.25} outerR={310} cw={false} />
       </g>
 
-      <g className="ring-3" filter="url(#glow)">
+      <g className="hr-3" filter="url(#glow)">
         <TextLayer radius={262.5} chars="甲乙丙丁戊己庚辛壬癸" size={15} cw={true} />
         <RingDividers count={10} innerR={238.75} outerR={281.25} cw={true} />
       </g>
 
-      <g className="ring-4">
+      <g className="hr-4">
         {houtian.map((t, i) => (
           <Trigram
             key={i}
@@ -340,17 +342,17 @@ function HeroRings() {
         <RingDividers count={8} innerR={208.75} outerR={238.75} cw={false} />
       </g>
 
-      <g className="ring-5" filter="url(#glow)">
+      <g className="hr-5" filter="url(#glow)">
         <TextLayer radius={202.5} chars="蓬任冲辅英芮柱心禽" size={14} cw={true} />
         <RingDividers count={9} innerR={188.75} outerR={208.75} cw={true} />
       </g>
 
-      <g className="ring-6" filter="url(#glow)">
+      <g className="hr-6" filter="url(#glow)">
         <TextLayer radius={175} chars="休生伤杜景死惊开" size={13} cw={false} />
         <RingDividers count={8} innerR={161.25} outerR={188.75} cw={false} />
       </g>
 
-      <g className="ring-7" filter="url(#glow)">
+      <g className="hr-7" filter="url(#glow)">
         <TextLayer radius={147.5} chars="符蛇阴合虎玄地天" size={12} cw={true} />
         <RingDividers count={8} innerR={130} outerR={161.25} cw={true} />
       </g>

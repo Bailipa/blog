@@ -90,6 +90,12 @@ model Project {
   updatedAt   DateTime @updatedAt
 }
 
+model Mumble {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+}
+
 model FriendLink {
   id          String  @id @default(cuid())
   name        String

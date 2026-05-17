@@ -7,7 +7,7 @@ interface PostCardProps {
     slug: string
     excerpt: string | null
     publishedAt: Date | null
-    category: { name: string } | null
+    category: { name: string; slug: string } | null
     tags: { tag: { name: string } }[]
   }
 }
@@ -18,11 +18,10 @@ export default function PostCard({ post }: PostCardProps) {
     : ''
 
   return (
-    <Link href={`/blog/${post.slug}`}>
+    <Link href={`/blog/${post.slug}`} data-category={post.category?.slug || ''}>
       <article className="post-card glass-card">
         <div className="post-card-top">
           {post.category && <span className="post-tag">{post.category.name}</span>}
-          {date && <span className="post-date">{date}</span>}
         </div>
         <h3 className="post-card-title">{post.title}</h3>
         <p className="post-card-excerpt">{post.excerpt}</p>
@@ -33,6 +32,7 @@ export default function PostCard({ post }: PostCardProps) {
             ))}
           </div>
         )}
+        <div className="post-meta">{date}</div>
       </article>
     </Link>
   )
