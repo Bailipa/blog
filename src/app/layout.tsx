@@ -3,6 +3,7 @@ import './globals.css'
 import { ThemeProvider } from 'next-themes'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { SpotlightTracker } from '@/components/layout/SpotlightTracker'
+import CompassBg from '@/components/hero/CompassBg'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" className="antialiased" suppressHydrationWarning>
       <body>
+        <CompassBg />
         <SpotlightTracker />
         <div className="page-spotlight" id="pageSpotlight" />
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>

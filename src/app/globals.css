@@ -181,6 +181,9 @@ body::before {
 .breathe-6 { animation: breathePulse 2s ease-in-out 1.5s infinite; }
 .breathe-7 { animation: breathePulse 1.6s ease-in-out 1.8s infinite; }
 
+#orbitParticles { transform-origin: 1000px 450px; animation: rotateCW 30s linear infinite; }
+#outerParticles { transform-origin: 1000px 450px; animation: rotateCCW 45s linear infinite; }
+
 .hr-boot { transform-origin: 1000px 450px; animation: ringBoot 1.2s cubic-bezier(0.16,1,0.3,1) both; }
 .taiji-boot { transform-origin: 1000px 450px; animation: taijiBoot 0.8s cubic-bezier(0.34,1.56,0.64,1) 1.5s both; }
 .taiji-halo-boot { animation: haloBoot 1s ease-out 1.5s both; }
@@ -211,11 +214,17 @@ body::before {
 .hero-right { position: absolute; inset: 0; width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center; z-index: 1;
   opacity: 0; transition: opacity 1.2s ease-out; touch-action: none;
-  transform: perspective(1200px) rotateY(-22deg) rotateX(-14deg); }
+  transform: perspective(1000px) rotateY(-28deg) rotateX(-22deg) translateX(15%) scale(1.23);
+  will-change: transform; }
 .hero-right.revealed { opacity: 1; }
 .hero-right-inner { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .qimen-svg { width: 100%; height: 100%; max-width: none;
   user-select: none; -webkit-user-select: none; }
+
+.compass-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; filter: blur(16px); opacity: 1; }
+.compass-bg-perspective { width: 100%; height: 100%; transform: perspective(1000px) rotateY(-28deg) rotateX(-22deg); }
+.compass-bg-inner { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: scale(1.9); }
+.compass-bg-inner svg { width: 100%; height: 100%; max-width: none; user-select: none; }
 
 /* ===== Nav ===== */
 .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 18px 40px;
@@ -629,7 +638,9 @@ body::before {
 @media (max-width: 640px) {
   .hero { padding-top: 50px; min-height: 500px; }
   .hero-left { padding: 40px 5vw 50px; }
-  .hero-right { transform: perspective(800px) rotateY(-22deg) rotateX(-14deg); }
+  .hero-right { transform: perspective(700px) rotateY(-28deg) rotateX(-22deg); }
+  .hero-right-inner { transform: none; }
+  .compass-bg-perspective { transform: perspective(700px) rotateY(-28deg) rotateX(-22deg); }
   .nav { padding: 14px 16px; }
   .nav-links { gap: 12px; }
   .nav-links a { font-size: 0.8rem; }

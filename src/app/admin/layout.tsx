@@ -13,6 +13,7 @@ const links = [
   { href: '/admin/mumbles', label: '碎碎念', icon: '💬' },
   { href: '/admin/friend-links', label: '友链', icon: '🔗' },
   { href: '/admin/projects', label: '作品', icon: '💻' },
+  { href: '/admin/about', label: '关于', icon: 'ℹ️' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

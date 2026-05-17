@@ -282,23 +282,6 @@ function HeroRings() {
         <circle cx={774} cy={224} r={2} fill={GOLD_BRIGHT} opacity={0.5} />
       </g>
 
-      <circle cx={CX} cy={CY} r={120} fill="url(#centerGlow)" filter="url(#glow-lg)" />
-
-      <circle className="taiji-halo" cx={CX} cy={CY} r={60} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.5} opacity={0.4} filter="url(#glow-md)" />
-      <circle className="taiji-halo" cx={CX} cy={CY} r={72} fill="none" stroke={GOLD_MID} strokeWidth={1} opacity={0.3} filter="url(#glow-md)" style={{ animationDelay: '1s' }} />
-      <circle className="taiji-halo" cx={CX} cy={CY} r={85} fill="none" stroke={GOLD_DARK} strokeWidth={0.8} opacity={0.2} filter="url(#glow-md)" style={{ animationDelay: '2s' }} />
-      <circle className="taiji-halo" cx={CX} cy={CY} r={100} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.5} opacity={0.15} filter="url(#glow-md)" style={{ animationDelay: '3s' }} />
-
-      <g className="taiji-group" filter="url(#taiji-glow)">
-        <path d="M 1000 400 A 50 50 0 0 1 1000 500 Z" fill={TEXT_LIGHT} />
-        <path d="M 1000 400 A 50 50 0 0 0 1000 500 Z" fill="#050816" />
-        <path d="M 1000 400 A 25 25 0 0 1 1000 450 Z" fill="#050816" />
-        <path d="M 1000 450 A 25 25 0 0 0 1000 500 Z" fill={TEXT_LIGHT} />
-        <circle cx={CX} cy={425} r={6} fill={TEXT_LIGHT} />
-        <circle cx={CX} cy={475} r={6} fill="#050816" />
-        <circle cx={CX} cy={CY} r={54} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.5} opacity={0.6} />
-        <circle cx={CX} cy={CY} r={58} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.8} opacity={0.3} />
-      </g>
 
       <g className="hr-1">
         {xiantian.map((t, i) => (

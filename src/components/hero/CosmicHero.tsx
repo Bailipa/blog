@@ -10,8 +10,6 @@ export default function CosmicHero() {
   const [heroLeftRevealed, setHeroLeftRevealed] = React.useState(false)
   const [navRevealed, setNavRevealed] = React.useState(false)
 
-  const rafRef = React.useRef(0)
-
   React.useEffect(() => {
     const svg = document.querySelector('.qimen-svg')
     if (!svg) return
@@ -80,12 +78,20 @@ export default function CosmicHero() {
 
     let targetX = 0, targetY = 0
     let currentX = 0, currentY = 0
+    let rafId: number | null = null
+    let isIdle = true
+    const prevTransforms: string[] = []
 
     const onMouseMove = (e: MouseEvent) => {
       const cx = window.innerWidth / 2
       const cy = window.innerHeight / 2
       targetX = (e.clientX - cx) / cx
       targetY = (e.clientY - cy) / cy
+
+      if (isIdle) {
+        isIdle = false
+        rafId = requestAnimationFrame(parallaxLoop)
+      }
     }
 
     const onMouseLeave = () => {
@@ -100,14 +106,26 @@ export default function CosmicHero() {
       currentX += (targetX - currentX) * 0.06
       currentY += (targetY - currentY) * 0.06
 
+      let changed = false
       ringWrappers.forEach((wr, i) => {
         const strength = 1 - i * 0.1
-        wr.setAttribute('transform', `translate(${currentX * 26 * strength}, ${currentY * 18 * strength})`)
+        const next = `translate(${(currentX * 26 * strength).toFixed(1)}, ${(currentY * 18 * strength).toFixed(1)})`
+        if (next !== prevTransforms[i]) {
+          wr.setAttribute('transform', next)
+          prevTransforms[i] = next
+          changed = true
+        }
       })
 
-      rafRef.current = requestAnimationFrame(parallaxLoop)
+      const isNearZero = Math.abs(currentX) < 0.001 && Math.abs(currentY) < 0.001
+      if (isNearZero && targetX === 0 && targetY === 0) {
+        isIdle = true
+        rafId = null
+        return
+      }
+
+      rafId = requestAnimationFrame(parallaxLoop)
     }
-    rafRef.current = requestAnimationFrame(parallaxLoop)
 
     return () => {
       clearTimeout(t0)
@@ -116,7 +134,7 @@ export default function CosmicHero() {
       clearTimeout(t3)
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseleave', onMouseLeave)
-      cancelAnimationFrame(rafRef.current)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 

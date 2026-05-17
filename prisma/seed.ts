@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs'
 async function main() {
   const userCount = await prisma.user.count()
   if (userCount > 0) {
-    console.log('Database already seeded, skipping.')
+    console.log('Database already seeded, skipping sample data.')
+    await seedSiteConfig()
     return
   }
 
@@ -60,7 +61,44 @@ async function main() {
   await prisma.friendLink.create({
     data: { name: 'EZTor', url: 'https://dogeggcode.cyou', description: '智能英语学习平台', sortOrder: 0 },
   })
+
+  await seedSiteConfig()
   console.log('Seed complete.')
+}
+
+async function seedSiteConfig() {
+  const aboutContent = `热爱探索技术与艺术的交汇点。专注于全栈开发、交互设计与创意编程。
+
+相信代码可以是一种表达方式，每一行都是对完美的追求。热衷于开源社区，持续学习中。`
+
+  const aboutSkills = JSON.stringify([
+    { category: '前端', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'] },
+    { category: '后端', items: ['Node.js', 'Python', 'Prisma', 'PostgreSQL'] },
+    { category: '创意', items: ['SVG 动画', 'WebGL', '交互设计', '数据可视化'] },
+  ])
+
+  await prisma.siteConfig.upsert({
+    where: { key: 'about_content' },
+    create: { key: 'about_content', value: aboutContent },
+    update: { value: aboutContent },
+  })
+  await prisma.siteConfig.upsert({
+    where: { key: 'about_skills' },
+    create: { key: 'about_skills', value: aboutSkills },
+    update: { value: aboutSkills },
+  })
+
+  const socialLinks = JSON.stringify([
+    { label: 'GitHub', url: 'https://github.com' },
+    { label: 'Twitter', url: 'https://twitter.com' },
+    { label: 'Email', url: 'mailto:hello@example.com' },
+  ])
+  await prisma.siteConfig.upsert({
+    where: { key: 'social_links' },
+    create: { key: 'social_links', value: socialLinks },
+    update: { value: socialLinks },
+  })
+  console.log('Site config seeded.')
 }
 
 main()

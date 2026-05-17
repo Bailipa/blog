@@ -9,7 +9,6 @@ export function HomeInteractions() {
     if (inited.current) return
     inited.current = true
 
-    // Category filter
     const tags = document.querySelectorAll('.filter-tag')
     const container = document.querySelector('.posts-scroll')
     const handleTagClick = (e: Event) => {
@@ -26,7 +25,6 @@ export function HomeInteractions() {
     }
     tags.forEach((t) => t.addEventListener('click', handleTagClick))
 
-    // Auto-scroll: posts
     const postsEl = document.querySelector('.posts-scroll')
     let paused1 = false
     let timer1: ReturnType<typeof setTimeout> | null = null
@@ -40,17 +38,6 @@ export function HomeInteractions() {
     }
     postsEl?.addEventListener('wheel', onWheel1, { passive: false })
 
-    let raf1 = 0
-    const loop1 = () => {
-      if (!paused1 && postsEl) postsEl.scrollLeft += 0.6
-      const half1 = postsEl ? postsEl.scrollWidth / 2 : 0
-      if (half1 > 0 && postsEl && postsEl.scrollLeft >= half1) postsEl.scrollLeft -= half1
-      if (half1 > 0 && postsEl && postsEl.scrollLeft <= 0) postsEl.scrollLeft += half1
-      raf1 = requestAnimationFrame(loop1)
-    }
-    raf1 = requestAnimationFrame(loop1)
-
-    // Auto-scroll: projects
     const projEl = document.querySelector('.projects-grid')
     let paused2 = false
     let timer2: ReturnType<typeof setTimeout> | null = null
@@ -64,17 +51,6 @@ export function HomeInteractions() {
     }
     projEl?.addEventListener('wheel', onWheel2, { passive: false })
 
-    let raf2 = 0
-    const loop2 = () => {
-      if (!paused2 && projEl) projEl.scrollLeft += 0.5
-      const half2 = projEl ? projEl.scrollWidth / 2 : 0
-      if (half2 > 0 && projEl && projEl.scrollLeft >= half2) projEl.scrollLeft -= half2
-      if (half2 > 0 && projEl && projEl.scrollLeft <= 0) projEl.scrollLeft += half2
-      raf2 = requestAnimationFrame(loop2)
-    }
-    raf2 = requestAnimationFrame(loop2)
-
-    // Auto-scroll: mumbles
     const mumblesEl = document.querySelector('.mumbles-scroll')
     let paused3 = false
     let timer3: ReturnType<typeof setTimeout> | null = null
@@ -88,17 +64,30 @@ export function HomeInteractions() {
     }
     mumblesEl?.addEventListener('wheel', onWheel3, { passive: false })
 
-    let raf3 = 0
-    const loop3 = () => {
-      if (!paused3 && mumblesEl) mumblesEl.scrollLeft -= 0.5
-      const half3 = mumblesEl ? mumblesEl.scrollWidth / 2 : 0
-      if (half3 > 0 && mumblesEl && mumblesEl.scrollLeft >= half3) mumblesEl.scrollLeft -= half3
-      if (half3 > 0 && mumblesEl && mumblesEl.scrollLeft <= 0) mumblesEl.scrollLeft += half3
-      raf3 = requestAnimationFrame(loop3)
+    let rafId = 0
+    const loop = () => {
+      if (!paused1 && postsEl) {
+        postsEl.scrollLeft += 0.6
+        const half1 = postsEl.scrollWidth / 2
+        if (half1 > 0 && postsEl.scrollLeft >= half1) postsEl.scrollLeft -= half1
+        if (half1 > 0 && postsEl.scrollLeft <= 0) postsEl.scrollLeft += half1
+      }
+      if (!paused2 && projEl) {
+        projEl.scrollLeft += 0.5
+        const half2 = projEl.scrollWidth / 2
+        if (half2 > 0 && projEl.scrollLeft >= half2) projEl.scrollLeft -= half2
+        if (half2 > 0 && projEl.scrollLeft <= 0) projEl.scrollLeft += half2
+      }
+      if (!paused3 && mumblesEl) {
+        mumblesEl.scrollLeft -= 0.5
+        const half3 = mumblesEl.scrollWidth / 2
+        if (half3 > 0 && mumblesEl.scrollLeft >= half3) mumblesEl.scrollLeft -= half3
+        if (half3 > 0 && mumblesEl.scrollLeft <= 0) mumblesEl.scrollLeft += half3
+      }
+      rafId = requestAnimationFrame(loop)
     }
-    raf3 = requestAnimationFrame(loop3)
+    rafId = requestAnimationFrame(loop)
 
-    // Auto-snap scroll
     let snapTimer: ReturnType<typeof setTimeout> | null = null
     const onScroll = () => {
       if (snapTimer) clearTimeout(snapTimer)
@@ -112,9 +101,7 @@ export function HomeInteractions() {
     return () => {
       inited.current = false
       tags.forEach((t) => t.removeEventListener('click', handleTagClick))
-      cancelAnimationFrame(raf1)
-      cancelAnimationFrame(raf2)
-      cancelAnimationFrame(raf3)
+      cancelAnimationFrame(rafId)
       window.removeEventListener('scroll', onScroll)
     }
   }, [])
