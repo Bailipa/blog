@@ -664,3 +664,23 @@ body::before {
 
 /* ===== Comments ===== */
 .blog-post-comments { margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(245,199,26,0.1); }
+
+.blog-comments { display: flex; flex-direction: column; gap: 24px; }
+.blog-comments-header { display: flex; flex-direction: column; gap: 6px; }
+.blog-comments-title { font-size: 1.4rem; font-weight: 700; color: var(--gold-bright); margin: 0; letter-spacing: 0.01em; }
+.blog-comments-notice { margin: 0; font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+.blog-comments-notice strong { color: var(--gold-mid); font-weight: 600; }
+.blog-comments-form { display: flex; flex-direction: column; gap: 10px; background: rgba(10,8,6,0.4); border: 1px solid rgba(245,199,26,0.1); border-radius: 12px; padding: 16px; }
+.blog-comments-textarea { width: 100%; padding: 12px 14px; background: rgba(10,8,6,0.6); color: var(--text-main); border: 1px solid rgba(245,199,26,0.15); border-radius: 8px; font-family: inherit; font-size: 0.92rem; line-height: 1.6; resize: vertical; min-height: 96px; transition: border-color 0.2s; box-sizing: border-box; }
+.blog-comments-textarea:focus { outline: none; border-color: var(--gold-bright); }
+.blog-comments-textarea::placeholder { color: var(--text-dim); }
+.blog-comments-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
+.blog-comments-form-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.blog-comments-counter { font-size: 0.78rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.blog-comments-error { margin: 0; font-size: 0.85rem; color: #f87171; }
+.blog-comments-success { margin: 0; font-size: 0.85rem; color: #86efac; }
+.blog-comments-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.blog-comments-empty { color: var(--text-dim); font-size: 0.88rem; padding: 12px 0; text-align: center; border: 1px dashed rgba(245,199,26,0.1); border-radius: 8px; }
+.blog-comments-item { background: rgba(10,8,6,0.4); border: 1px solid rgba(245,199,26,0.08); border-radius: 10px; padding: 14px 16px; }
+.blog-comments-item-meta { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px; }
+.blog-comments-item-content { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--text-main); font-size: 0.95rem; line-height: 1.65; }

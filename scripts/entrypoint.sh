@@ -27,5 +27,8 @@ if [ ! -f prisma/dev.db ]; then
   exit 1
 fi
 
+echo "Syncing schema (idempotent)..."
+node scripts/migrate-db.js
+
 echo "Starting server..."
 exec node server.js

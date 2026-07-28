@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma'
 import { markdownToHtml, extractToc, estimateReadTime } from '@/lib/markdown'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import TableOfContents from '@/components/blog/TableOfContents'
-import { GiscusComments } from '@/components/comments/GiscusComments'
+import Comments from '@/components/comments/Comments'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +80,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </div>
 
       <footer className="blog-post-comments">
-        <GiscusComments slug={slug} />
+        <Comments postSlug={slug} />
       </footer>
     </article>
   )

@@ -14,6 +14,7 @@ const links = [
   { href: '/admin/friend-links', label: '友链', icon: '🔗' },
   { href: '/admin/projects', label: '作品', icon: '💻' },
   { href: '/admin/about', label: '关于', icon: 'ℹ️' },
+  { href: '/admin/comments', label: '评论', icon: '💡' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

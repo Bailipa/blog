@@ -12,15 +12,19 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Clean old deploy artifacts before build (standalone copies project root)
 rm -rf deploy lb-blog_deploy_*.tar.gz
 
-echo "[1/3] Syncing database schema..."
+echo "[1/4] Generating Prisma client..."
+npx prisma generate
+
+echo ""
+echo "[2/4] Syncing database schema..."
 npx prisma db push --skip-generate
 
 echo ""
-echo "[2/3] Building..."
+echo "[3/4] Building..."
 npm run build
 
 echo ""
-echo "[3/3] Creating deployment package..."
+echo "[4/4] Creating deployment package..."
 DEPLOY_DIR="deploy"
 rm -rf "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR"
@@ -29,10 +33,14 @@ cp -r .next/standalone/. "$DEPLOY_DIR/"
 cp -r .next/static "$DEPLOY_DIR/.next/static"
 cp -r node_modules/@prisma "$DEPLOY_DIR/node_modules/@prisma"
 cp -r node_modules/.prisma "$DEPLOY_DIR/node_modules/.prisma"
+cp -r scripts "$DEPLOY_DIR/scripts"
 
-# Copy debian prisma engine binary (not included by NFT)
-mkdir -p "$DEPLOY_DIR/src/generated/prisma"
-cp src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node "$DEPLOY_DIR/src/generated/prisma/"
+# Copy Prisma generated client + debian engine binary.
+# Whole directory (not just the .so.node) so scripts like migrate-db.js can
+# require the JS entrypoint on the server.
+rm -rf "$DEPLOY_DIR/src"
+mkdir -p "$DEPLOY_DIR/src/generated"
+cp -r src/generated/prisma "$DEPLOY_DIR/src/generated/prisma"
 
 # Remove unnecessary prisma sub-packages
 rm -rf "$DEPLOY_DIR/node_modules/@prisma/engines"
@@ -56,13 +64,6 @@ NEXTAUTH_URL="https://blog.dogeggcode.cyou"
 NEXT_PUBLIC_APP_URL="https://blog.dogeggcode.cyou"
 LOG_LEVEL=info
 ENVEOF
-
-rm -rf "$DEPLOY_DIR/src" # except the engine binary we just copied... actually we need to keep it
-
-# We already copied the engine binary, but rm -rf src deletes it.
-# So copy it AFTER cleanup.
-mkdir -p "$DEPLOY_DIR/src/generated/prisma"
-cp src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node "$DEPLOY_DIR/src/generated/prisma/"
 
 rm -f "$DEPLOY_DIR/tsconfig.json" "$DEPLOY_DIR/tsconfig.tsbuildinfo"
 rm -f "$DEPLOY_DIR/next.config.ts" "$DEPLOY_DIR/postcss.config.mjs"
