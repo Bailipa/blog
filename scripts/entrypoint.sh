@@ -14,8 +14,17 @@ if [ ! -f prisma/schema.prisma ]; then
 fi
 
 if [ ! -f prisma/dev.db ]; then
-  echo "First launch: copying bundled database..."
-  cp prisma-bundled/dev.db prisma/dev.db
+  echo ""
+  echo "==============================================================="
+  echo " WARNING: prisma/dev.db is missing."
+  echo " This entrypoint WILL NOT auto-create one from the bundled seed."
+  echo " If this is a fresh install, copy a seed DB manually:"
+  echo "   scp path/to/dev.db /www/wwwroot/blog.dogeggcode.cyou/lb-blog/prisma/dev.db"
+  echo " Or, for dev only:"
+  echo "   cd \$APP_DIR && npx prisma db push --skip-generate && npm run seed"
+  echo " Refusing to start with an empty database to protect live data."
+  echo "==============================================================="
+  exit 1
 fi
 
 echo "Starting server..."

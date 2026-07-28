@@ -59,3 +59,6 @@ src/generated/prisma/
 # deployment artifacts
 /deploy/
 lb-blog_deploy_*.tar.gz
+
+# backups (DB snapshots, uploads)
+/backups/

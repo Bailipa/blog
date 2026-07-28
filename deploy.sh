@@ -75,6 +75,15 @@ rm -f "$DEPLOY_DIR/deploy.sh"
 # Remove WASM engines from runtime (not needed with query engine binary)
 rm -f "$DEPLOY_DIR"/node_modules/@prisma/client/runtime/*.wasm-base64.*
 
+# CRITICAL: strip live state from the bundle so it can never overwrite prod
+# - prisma-bundled/dev.db: this is the local seed DB at build time; if it lands
+#   on the server and entrypoint sees a missing prisma/dev.db, it would silently
+#   reseed the live DB and wipe user content (posts, mumbles, etc).
+# - public/uploads/: user-uploaded images that must be preserved across deploys.
+rm -f "$DEPLOY_DIR/prisma-bundled/dev.db" "$DEPLOY_DIR/prisma-bundled/dev.db-journal"
+rm -f "$DEPLOY_DIR"/prisma-bundled/dev.db.* 2>/dev/null || true
+rm -rf "$DEPLOY_DIR/public/uploads"
+
 echo ""
 TARBALL="lb-blog_deploy_${TIMESTAMP}.tar.gz"
 tar -czf "$TARBALL" -C "$(dirname "$DEPLOY_DIR")" "$(basename "$DEPLOY_DIR")"
@@ -83,7 +92,20 @@ echo ""
 echo "=== Done! ==="
 echo "Package: $SCRIPT_DIR/$TARBALL ($(ls -lh "$TARBALL" | awk '{print $5}'))"
 echo ""
-echo "Deploy:"
-echo "  1. pm2 delete lb-blog; rm -rf /www/wwwroot/blog.dogeggcode.cyou/lb-blog"
-echo "  2. Upload $TARBALL via Baota → extract → rename deploy/ to lb-blog/"
-echo "  3. cd /www/wwwroot/blog.dogeggcode.cyou/lb-blog && pm2 start scripts/entrypoint.sh --name lb-blog"
+echo "Deploy (data-preserving):"
+echo "  1. ssh root@114.55.58.90 'pm2 stop lb-blog'"
+echo "  2. Upload $TARBALL via Baota → extract INTO the existing lb-blog/ dir"
+echo "     (do NOT rm -rf; tar -xf on top of existing files is fine and preserves uploads)"
+echo "  3. ssh root@114.55.58.90 'cd /www/wwwroot/blog.dogeggcode.cyou/lb-blog'"
+echo "             'pm2 delete lb-blog   # only to refresh env vars'"
+echo "             'pm2 start scripts/entrypoint.sh --name lb-blog'"
+echo "  4. Verify Post count unchanged:"
+echo "     ssh root@114.55.58.90 'sqlite3 /www/wwwroot/blog.dogeggcode.cyou/lb-blog/prisma/dev.db \"SELECT COUNT(*) FROM Post;\"'"
+echo ""
+echo "First-time install (no existing data):"
+echo "  1. Extract to a fresh /www/wwwroot/blog.dogeggcode.cyou/lb-blog/"
+echo "  2. cd lb-blog && pm2 start scripts/entrypoint.sh --name lb-blog"
+echo "  3. entrypoint will seed prisma/dev.db from prisma-bundled/dev.db (which"
+echo "     was stripped above — so this requires manually providing a seed DB."
+echo "     For dev environments, run \`npx prisma db seed\` locally and scp the"
+echo "     resulting prisma/dev.db into prisma-bundled/ before re-running deploy.sh)."
