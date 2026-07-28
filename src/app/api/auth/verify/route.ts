@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { signIn } from '@/lib/auth'
-import { consumeMagicToken } from '@/lib/magic-link'
+import { peekMagicToken } from '@/lib/magic-link'
 import { redirect } from 'next/navigation'
 
 export const runtime = 'nodejs'
@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
     return redirect('/admin/login?error=missing-token')
   }
 
-  const result = await consumeMagicToken(token)
+  // Peek only — the actual single-use consume happens inside NextAuth's
+  // authorize callback. Doing it here too would race with signIn and
+  // produce a token-invalid error on first click.
+  const result = await peekMagicToken(token)
   if (!result.ok) {
     const reason = result.reason === 'expired' ? 'token-expired' : 'token-invalid'
     return redirect(`/admin/login?error=${reason}`)
@@ -21,11 +24,14 @@ export async function GET(req: NextRequest) {
   try {
     await signIn('magic-link', { token, redirectTo: callbackUrl })
   } catch (e) {
-    // signIn throws a redirect on success. Re-throw so Next.js handles it.
-    if (e instanceof Error && e.message === 'NEXT_REDIRECT') throw e
+    // signIn throws a redirect (NEXT_REDIRECT) on success. Re-throw so
+    // Next.js handles it; everything else is a real failure.
+    if (e instanceof Error && (e.message === 'NEXT_REDIRECT' || (e as { digest?: string }).digest?.startsWith?.('NEXT_REDIRECT'))) {
+      throw e
+    }
+    console.error('[verify] signIn failed:', e)
     return redirect(`/admin/login?error=signin-failed`)
   }
 
-  // signIn should always redirect on success, but as a safety net:
   return redirect(callbackUrl)
 }

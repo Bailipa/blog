@@ -19,7 +19,8 @@ export type ConsumeResult =
   | { ok: true; identifier: string }
   | { ok: false; reason: 'not-found' | 'expired' }
 
-export async function consumeMagicToken(token: string): Promise<ConsumeResult> {
+// Read-only check: token exists and not expired. Does NOT delete.
+export async function peekMagicToken(token: string): Promise<ConsumeResult> {
   if (!token) return { ok: false, reason: 'not-found' }
   const row = await prisma.verificationToken.findUnique({ where: { token } })
   if (!row) return { ok: false, reason: 'not-found' }
@@ -27,8 +28,16 @@ export async function consumeMagicToken(token: string): Promise<ConsumeResult> {
     await prisma.verificationToken.delete({ where: { token } }).catch(() => {})
     return { ok: false, reason: 'expired' }
   }
-  await prisma.verificationToken.delete({ where: { token } })
   return { ok: true, identifier: row.identifier }
+}
+
+// Atomic check-and-consume: deletes the token iff it exists and is valid.
+// Single-use enforcement lives here.
+export async function consumeMagicToken(token: string): Promise<ConsumeResult> {
+  const peek = await peekMagicToken(token)
+  if (!peek.ok) return peek
+  await prisma.verificationToken.delete({ where: { token } })
+  return peek
 }
 
 export async function purgeExpiredTokens(): Promise<number> {
