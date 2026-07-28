@@ -32,6 +32,9 @@ export async function getBreaker(prisma: PrismaClient): Promise<BreakerState> {
 }
 
 export async function setBreaker(prisma: PrismaClient, state: BreakerState): Promise<void> {
+  const wasOpen = (await prisma.siteConfig.findUnique({ where: { key: BREAKER_KEY } }))?.value === 'true'
+  const transitioningToOpen = state.open && !wasOpen
+
   await Promise.all([
     prisma.siteConfig.upsert({
       where: { key: BREAKER_KEY },
@@ -49,6 +52,16 @@ export async function setBreaker(prisma: PrismaClient, state: BreakerState): Pro
       create: { key: BREAKER_TRIPPED_AT_KEY, value: state.trippedAt ?? '' },
     }),
   ])
+
+  // When breaker transitions to open, retroactively hide all currently VISIBLE
+  // comments. Per the "兜底策略，隐藏所有评论" spec: the breaker is a hard stop
+  // for public visibility, not just for future submissions.
+  if (transitioningToOpen) {
+    await prisma.comment.updateMany({
+      where: { status: 'VISIBLE' },
+      data: { status: 'HIDDEN' },
+    })
+  }
 }
 
 export function getRequestIp(req: Request): string {

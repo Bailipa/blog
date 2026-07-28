@@ -471,10 +471,10 @@ body::before {
 /* ===== Admin ===== */
 .admin-root { display: flex; min-height: 100vh; background: #0f0f13; color: #e2e8f0; }
 .admin-root [data-slot="card"] { background: linear-gradient(145deg, rgba(8,12,30,0.65), rgba(15,12,25,0.55)); backdrop-filter: blur(16px); border: 1px solid rgba(245,199,26,0.1); }
-.admin-sidebar { width: 220px; min-width: 220px; background: #0a0a0e; border-right: 1px solid rgba(245,199,26,0.1); display: flex; flex-direction: column; }
+.admin-sidebar { width: 220px; min-width: 220px; background: #0a0a0e; border-right: 1px solid rgba(245,199,26,0.1); display: flex; flex-direction: column; align-self: flex-start; }
 .admin-sidebar-header { padding: 20px; border-bottom: 1px solid rgba(245,199,26,0.08); }
 .admin-sidebar-logo { font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #8b6914, #c99a2a, #f5c71a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.admin-sidebar-nav { flex: 1; padding: 12px 0; display: flex; flex-direction: column; gap: 2px; }
+.admin-sidebar-nav { padding: 12px 0; display: flex; flex-direction: column; gap: 2px; }
 .admin-sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: #a08960; text-decoration: none; font-size: 0.88rem; transition: all 0.2s; border: none; background: none; cursor: pointer; width: 100%; text-align: left; }
 .admin-sidebar-link:hover { color: #f5c71a; background: rgba(245,199,26,0.06); }
 .admin-sidebar-link.active { color: #f5c71a; background: rgba(245,199,26,0.1); border-right: 2px solid #f5c71a; }

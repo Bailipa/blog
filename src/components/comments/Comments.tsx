@@ -62,11 +62,9 @@ export default function Comments({ postSlug }: CommentsProps) {
       })
       const json = await res.json().catch(() => ({}))
       if (res.ok) {
-        setSuccess('已提交。后台审核通过后显示。')
+        setSuccess('已提交')
         setContent('')
-        // Don't reload — the comment is hidden until approved. Optional UX:
-        // could optimistically show as "pending" but that contradicts the
-        // explicit visibility rule.
+        await load()
       } else {
         setError(json.error || '提交失败')
       }
