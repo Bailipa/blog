@@ -12,10 +12,19 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
-  password  String
+  password  String?
+  email     String?  @unique
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
   comments  Comment[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Post {

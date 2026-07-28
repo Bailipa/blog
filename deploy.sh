@@ -63,6 +63,21 @@ NEXTAUTH_SECRET="YUyzO697P06HEMIFzF9nhZKyfLDkwfSILS2lx6FAWZ8="
 NEXTAUTH_URL="https://blog.dogeggcode.cyou"
 NEXT_PUBLIC_APP_URL="https://blog.dogeggcode.cyou"
 LOG_LEVEL=info
+
+# P3: magic-link auth
+# CREATOR_EMAIL is consumed by scripts/migrate-db.js on first launch to
+# backfill the existing admin user's email column. DirectMail creds are
+# optional — when unset, magic links fall through to a dev log file.
+CREATOR_EMAIL="2350344031@qq.com"
+# DIRECT_MAIL_ACCESS_KEY_ID=
+# DIRECT_MAIL_ACCESS_KEY_SECRET=
+# DIRECT_MAIL_FROM=
+# DIRECT_MAIL_FROM_NAME="LB Blog"
+# DIRECT_MAIL_REGION="cn-hangzhou"
+
+# Recovery: set to "true" to enable username+password login as a fallback.
+# Default false. The AI client (P4) uses a separate API-token path.
+ALLOW_PASSWORD_LOGIN="false"
 ENVEOF
 
 rm -f "$DEPLOY_DIR/tsconfig.json" "$DEPLOY_DIR/tsconfig.tsbuildinfo"

@@ -16,26 +16,57 @@ declare module 'next-auth' {
   }
 }
 
+const allowPasswordLogin = process.env.ALLOW_PASSWORD_LOGIN === 'true'
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
+      id: 'magic-link',
+      name: 'magic-link',
       credentials: {
-        username: { label: '用户名', type: 'text' },
-        password: { label: '密码', type: 'password' },
+        token: { label: 'token', type: 'text' },
       },
       authorize: async (credentials) => {
-        if (!credentials?.username || !credentials?.password) return null
-        const { compare } = await import('bcryptjs')
+        const token = credentials?.token
+        if (typeof token !== 'string' || !token) return null
+        const { consumeMagicToken } = await import('./magic-link')
+        const result = await consumeMagicToken(token)
+        if (!result.ok) return null
         const prisma = (await import('./prisma')).default
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username as string },
-        })
+        const user = await prisma.user.findUnique({ where: { email: result.identifier } })
         if (!user) return null
-        const valid = await compare(credentials.password as string, user.password)
-        if (!valid) return null
-        return { id: user.id, name: user.username, isAdmin: user.isAdmin }
+        return {
+          id: user.id,
+          name: user.username,
+          email: user.email ?? undefined,
+          isAdmin: user.isAdmin,
+        }
       },
     }),
+    ...(allowPasswordLogin
+      ? [
+          Credentials({
+            id: 'credentials',
+            name: 'credentials',
+            credentials: {
+              username: { label: '用户名', type: 'text' },
+              password: { label: '密码', type: 'password' },
+            },
+            authorize: async (credentials) => {
+              if (!credentials?.username || !credentials?.password) return null
+              const { compare } = await import('bcryptjs')
+              const prisma = (await import('./prisma')).default
+              const user = await prisma.user.findUnique({
+                where: { username: credentials.username as string },
+              })
+              if (!user || !user.password) return null
+              const valid = await compare(credentials.password as string, user.password)
+              if (!valid) return null
+              return { id: user.id, name: user.username, isAdmin: user.isAdmin }
+            },
+          }),
+        ]
+      : []),
   ],
   callbacks: {
     jwt: ({ token, user }) => {

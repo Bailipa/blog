@@ -22,12 +22,36 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS "Comment_postId_status_createdAt_idx" ON "Comment"("postId", "status", "createdAt")`,
   `CREATE INDEX IF NOT EXISTS "Comment_createdAt_idx" ON "Comment"("createdAt")`,
   `CREATE INDEX IF NOT EXISTS "Comment_ipHash_createdAt_idx" ON "Comment"("ipHash", "createdAt")`,
+  // P3: magic-link auth
+  `CREATE TABLE IF NOT EXISTS "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" DATETIME NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_token_key" ON "VerificationToken"("token")`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token")`,
 ]
 
 async function main() {
   for (const sql of STATEMENTS) {
     await prisma.$executeRawUnsafe(sql)
   }
+
+  // P3 migration: bootstrap the existing creator admin with an email so they
+  // can receive magic links. Reads CREATOR_EMAIL from env. Only runs if the
+  // user exists and currently has no email — never overwrites a known one.
+  const creatorEmail = process.env.CREATOR_EMAIL
+  if (creatorEmail) {
+    const creator = await prisma.user.findFirst({ where: { username: 'creator' } })
+    if (creator && !creator.email) {
+      await prisma.user.update({
+        where: { id: creator.id },
+        data: { email: creatorEmail },
+      })
+      console.log('[migrate] creator.email =', creatorEmail)
+    }
+  }
+
   console.log('[migrate] schema sync complete')
 }
 
