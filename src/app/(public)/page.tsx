@@ -4,6 +4,8 @@ import ProjectGrid from '@/components/projects/ProjectGrid'
 import { HomeInteractions } from '@/components/layout/HomeInteractions'
 import prisma from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const posts = await prisma.post.findMany({
     where: { status: 'PUBLISHED' },

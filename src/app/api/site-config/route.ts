@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
+import { revalidatePath } from 'next/cache'
 
 export async function GET() {
   try {
@@ -39,6 +40,8 @@ export async function PUT(req: NextRequest) {
       results[config.key] = config.value
     }
 
+    revalidatePath('/')
+    revalidatePath('/about')
     return NextResponse.json({ data: results })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

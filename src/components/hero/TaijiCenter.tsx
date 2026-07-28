@@ -16,7 +16,7 @@ function TaijiCenter() {
 
     const ns = 'http://www.w3.org/2000/svg'
 
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 8; i++) {
       const orbitR = 75 + Math.random() * 20
       const pRadius = 1.5 + Math.random() * 2
       const startAngle = Math.random() * Math.PI * 2
@@ -28,24 +28,10 @@ function TaijiCenter() {
       el.setAttribute('cy', String(py))
       el.setAttribute('r', String(pRadius))
       el.setAttribute('fill', '#00d4ff')
-      el.setAttribute('filter', 'url(#glow)')
       innerGroup.appendChild(el)
-
-      for (let t = 0; t < 3; t++) {
-        const trailAngle = startAngle - (t + 1) * 0.05
-        const tx = CX + orbitR * Math.cos(trailAngle)
-        const ty = CY + orbitR * Math.sin(trailAngle)
-        const tc = document.createElementNS(ns, 'circle')
-        tc.setAttribute('cx', String(tx))
-        tc.setAttribute('cy', String(ty))
-        tc.setAttribute('r', String(pRadius * (1 - t * 0.2)))
-        tc.setAttribute('fill', '#00d4ff')
-        tc.setAttribute('opacity', String(0.3 - t * 0.08))
-        innerGroup.appendChild(tc)
-      }
     }
 
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 12; i++) {
       const orbitR = 325 + Math.random() * 35
       const pRadius = 1 + Math.random() * 1.5
       const startAngle = Math.random() * Math.PI * 2
@@ -59,21 +45,7 @@ function TaijiCenter() {
       el.setAttribute('cy', String(py))
       el.setAttribute('r', String(pRadius))
       el.setAttribute('fill', color)
-      el.setAttribute('filter', 'url(#glow)')
       outerGroup.appendChild(el)
-
-      for (let t = 0; t < 3; t++) {
-        const trailAngle = startAngle - (t + 1) * 0.06
-        const tx = CX + orbitR * Math.cos(trailAngle)
-        const ty = CY + orbitR * Math.sin(trailAngle)
-        const tc = document.createElementNS(ns, 'circle')
-        tc.setAttribute('cx', String(tx))
-        tc.setAttribute('cy', String(ty))
-        tc.setAttribute('r', String(pRadius * (1 - t * 0.25)))
-        tc.setAttribute('fill', color)
-        tc.setAttribute('opacity', String(0.25 - t * 0.07))
-        outerGroup.appendChild(tc)
-      }
     }
   }, [])
 
@@ -93,8 +65,8 @@ function TaijiCenter() {
         <circle cx={CX} cy={CY} r={54} fill="none" stroke="#00d4ff" strokeWidth={1.5} opacity={0.6} />
         <circle cx={CX} cy={CY} r={58} fill="none" stroke="#00d4ff" strokeWidth={0.8} opacity={0.3} />
       </g>
-      <g ref={innerRef} id="orbitParticles" />
-      <g ref={outerRef} id="outerParticles" />
+      <g ref={innerRef} id="orbitParticles" filter="url(#glow)" />
+      <g ref={outerRef} id="outerParticles" filter="url(#glow)" />
     </>
   )
 }

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
 export const runtime = 'nodejs'
+import { revalidatePath } from 'next/cache'
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -11,6 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params
     const body = await req.json()
     const link = await prisma.friendLink.update({ where: { id }, data: body })
+    revalidatePath('/')
     return NextResponse.json({ data: link })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)
@@ -24,6 +26,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const { id } = await params
     await prisma.friendLink.delete({ where: { id } })
+    revalidatePath('/')
     return NextResponse.json({ data: { id } })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

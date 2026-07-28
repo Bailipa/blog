@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(
   _req: NextRequest,
@@ -63,6 +64,8 @@ export async function PUT(
       include: { category: true, tags: { include: { tag: true } } },
     })
 
+    revalidatePath('/')
+    revalidatePath('/blog')
     return NextResponse.json({ data: post })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)
@@ -81,7 +84,11 @@ export async function DELETE(
     }
 
     const { id } = await params
+    const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } })
     await prisma.post.delete({ where: { id } })
+    revalidatePath('/')
+    revalidatePath('/blog')
+    if (post?.slug) revalidatePath(`/blog/${post.slug}`)
     return NextResponse.json({ data: { id } })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

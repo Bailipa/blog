@@ -55,3 +55,7 @@ public/uploads/
 
 # generated
 src/generated/prisma/
+
+# deployment artifacts
+/deploy/
+lb-blog_deploy_*.tar.gz

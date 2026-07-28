@@ -3,6 +3,8 @@ import { markdownToHtml } from '@/lib/markdown'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import { FriendLinks } from '@/components/layout/FriendLinks'
 
+export const dynamic = 'force-dynamic'
+
 const defaultContent = `热爱探索技术与艺术的交汇点。专注于全栈开发、交互设计与创意编程。
 
 相信代码可以是一种表达方式，每一行都是对完美的追求。热衷于开源社区，持续学习中。`

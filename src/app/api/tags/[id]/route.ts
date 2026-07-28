@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
+import { revalidatePath } from 'next/cache'
 
 export async function PUT(
   req: NextRequest,
@@ -17,6 +18,7 @@ export async function PUT(
     const { id } = await params
     const body = await req.json()
     const tag = await prisma.tag.update({ where: { id }, data: body })
+    revalidatePath('/')
     return NextResponse.json({ data: tag })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)
@@ -36,6 +38,7 @@ export async function DELETE(
 
     const { id } = await params
     await prisma.tag.delete({ where: { id } })
+    revalidatePath('/')
     return NextResponse.json({ data: { id } })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(req: NextRequest) {
   try {
@@ -71,6 +72,8 @@ export async function POST(req: NextRequest) {
       include: { category: true, tags: { include: { tag: true } } },
     })
 
+    revalidatePath('/')
+    revalidatePath('/blog')
     return NextResponse.json({ data: post }, { status: 201 })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

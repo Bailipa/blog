@@ -61,7 +61,7 @@ function Trigram({
   const offsets = [offset, 0, -offset]
 
   return (
-    <g filter="url(#glow)" data-name={name} data-symbol={symbol} data-desc={desc}>
+    <g data-name={name} data-symbol={symbol} data-desc={desc}>
       {offsets.map((off, i) => {
         const r = radius + off
         if (yaoLines[i] === 1) {
@@ -255,13 +255,15 @@ function HeroRings() {
         <path d="M 1000 450 L 650 530 L 650 370 Z" fill="url(#centerGlow)" />
       </g>
 
-      <circle cx={CX} cy={CY} r={320} fill="none" stroke={GOLD_BRIGHT} strokeWidth={3.5} opacity={0.7} filter="url(#glow)" className="breathe-1" />
-      <circle cx={CX} cy={CY} r={280} fill="none" stroke={GOLD_BRIGHT} strokeWidth={2.2} opacity={0.6} filter="url(#glow)" className="breathe-2" />
-      <circle cx={CX} cy={CY} r={245} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.8} opacity={0.55} filter="url(#glow)" className="breathe-3" />
-      <circle cx={CX} cy={CY} r={215} fill="none" stroke={GOLD_BRIGHT} strokeWidth={3.0} opacity={0.5} filter="url(#glow)" className="breathe-4" />
-      <circle cx={CX} cy={CY} r={190} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.5} opacity={0.45} filter="url(#glow)" className="breathe-5" />
-      <circle cx={CX} cy={CY} r={160} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.2} opacity={0.4} filter="url(#glow)" className="breathe-6" />
-      <circle cx={CX} cy={CY} r={135} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.9} opacity={0.35} filter="url(#glow)" className="breathe-7" />
+      <g filter="url(#glow)" className="breathe-group">
+        <circle cx={CX} cy={CY} r={320} fill="none" stroke={GOLD_BRIGHT} strokeWidth={3.5} opacity={0.7} className="breathe-1" />
+        <circle cx={CX} cy={CY} r={280} fill="none" stroke={GOLD_BRIGHT} strokeWidth={2.2} opacity={0.6} className="breathe-2" />
+        <circle cx={CX} cy={CY} r={245} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.8} opacity={0.55} className="breathe-3" />
+        <circle cx={CX} cy={CY} r={215} fill="none" stroke={GOLD_BRIGHT} strokeWidth={3.0} opacity={0.5} className="breathe-4" />
+        <circle cx={CX} cy={CY} r={190} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.5} opacity={0.45} className="breathe-5" />
+        <circle cx={CX} cy={CY} r={160} fill="none" stroke={GOLD_BRIGHT} strokeWidth={1.2} opacity={0.4} className="breathe-6" />
+        <circle cx={CX} cy={CY} r={135} fill="none" stroke={GOLD_BRIGHT} strokeWidth={0.9} opacity={0.35} className="breathe-7" />
+      </g>
 
       <g filter="url(#glow)" opacity={0.7}>
         <circle cx={CX} cy={130} r={3.5} fill={GOLD_BRIGHT} />
@@ -283,7 +285,7 @@ function HeroRings() {
       </g>
 
 
-      <g className="hr-1">
+      <g className="hr-1" filter="url(#glow)">
         {xiantian.map((t, i) => (
           <Trigram
             key={i}

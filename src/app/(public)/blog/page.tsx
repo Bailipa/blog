@@ -2,6 +2,8 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import PostCard from '@/components/blog/PostCard'
 
+export const dynamic = 'force-dynamic'
+
 const PAGE_SIZE = 12
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {

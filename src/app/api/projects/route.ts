@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
+import { revalidatePath } from 'next/cache'
 
 export async function GET() {
   try {
@@ -25,6 +26,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const project = await prisma.project.create({ data: body })
+    revalidatePath('/')
+    revalidatePath('/projects')
     return NextResponse.json({ data: project }, { status: 201 })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

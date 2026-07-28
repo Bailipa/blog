@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma'
 import ProjectGrid from '@/components/projects/ProjectGrid'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectsPage() {
   const projects = await prisma.project.findMany({
     orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],

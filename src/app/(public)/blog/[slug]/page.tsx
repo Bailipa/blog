@@ -7,6 +7,8 @@ import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import TableOfContents from '@/components/blog/TableOfContents'
 import { GiscusComments } from '@/components/comments/GiscusComments'
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const post = await prisma.post.findUnique({ where: { slug }, select: { title: true, excerpt: true } })
