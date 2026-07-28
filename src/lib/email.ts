@@ -64,8 +64,15 @@ async function sendViaDirectMail(email: MagicLinkEmail): Promise<SendResult> {
   }
   params.Signature = signAliyun(params, sk)
 
-  const body = new URLSearchParams(params).toString()
-  const endpoint = `https://dm.aliyuncs.com/?${body}`
+  // The canonical query string IS the URL query — do NOT pass it through
+  // URLSearchParams.toString(), which would re-encode values and double-encode
+  // any '%' characters (e.g. the `%40` in noreply%40blog.dogeggcode.cyou
+  // became `%2540`, which Aliyun's signature check rejected).
+  const sortedKeys = Object.keys(params).sort()
+  const query = sortedKeys
+    .map((k) => `${percentEncode(k)}=${percentEncode(params[k])}`)
+    .join('&')
+  const endpoint = `https://dm.aliyuncs.com/?${query}`
 
   try {
     const res = await fetch(endpoint, { method: 'GET' })
@@ -86,6 +93,15 @@ async function sendViaDirectMail(email: MagicLinkEmail): Promise<SendResult> {
 }
 
 function signAliyun(params: Record<string, string>, secret: string): string {
+  // Aliyun v3 signing: canonical query string is sorted with each value
+  // percent-encoded once, then the entire canonical is percent-encoded
+  // again to produce the tail of StringToSign. The double-encoding of
+  // values (e.g. `@` becomes `%40` in canonical, then `%2540` in the
+  // string-to-sign) is correct per spec — verified against Aliyun's
+  // "server string to sign is:" error response.
+  //
+  //   CanonicalizedQueryString: sorted k=enc(v) joined by &
+  //   StringToSign: HTTPMethod&%2F&percentEncode(CanonicalizedQueryString)
   const sorted = Object.keys(params)
     .sort()
     .map((k) => `${percentEncode(k)}=${percentEncode(params[k])}`)
@@ -95,9 +111,17 @@ function signAliyun(params: Record<string, string>, secret: string): string {
 }
 
 function percentEncode(s: string): string {
+  // Aliyun's percentEncode is stricter than JS encodeURIComponent: also
+  // encodes ! ' ( ) (the latter are valid URL chars per RFC 3986 but Aliyun
+  // encodes them anyway — e.g. our HTML body had '!doctype' but the server
+  // expected '%21doctype', causing "Specified signature is not matched").
   return encodeURIComponent(s)
     .replace(/\+/g, '%20')
     .replace(/\*/g, '%2A')
+    .replace(/!/g, '%21')
+    .replace(/'/g, '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
     .replace(/%7E/g, '~')
 }
 

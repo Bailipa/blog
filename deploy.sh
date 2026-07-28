@@ -12,6 +12,14 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Clean old deploy artifacts before build (standalone copies project root)
 rm -rf deploy lb-blog_deploy_*.tar.gz
 
+# Source .env.local if it exists so DirectMail / SMTP secrets make it into
+# the generated .env.production. The .env.local file is gitignored and
+# holds values the build host can't expose (e.g. AK secrets). Falls back
+# silently if absent.
+if [ -f .env.local ]; then
+  set -a; . ./.env.local; set +a
+fi
+
 echo "[1/4] Generating Prisma client..."
 npx prisma generate
 
@@ -54,7 +62,7 @@ rm -rf "$DEPLOY_DIR/node_modules/@prisma/driver-adapter-utils"
 # Clean dev files
 mv "$DEPLOY_DIR/prisma" "$DEPLOY_DIR/prisma-bundled"
 
-cat > "$DEPLOY_DIR/.env.production" << 'ENVEOF'
+cat > "$DEPLOY_DIR/.env.production" <<ENVEOF
 NODE_ENV=production
 PORT=3001
 AUTH_TRUST_HOST=true
@@ -68,16 +76,16 @@ LOG_LEVEL=info
 # CREATOR_EMAIL is consumed by scripts/migrate-db.js on first launch to
 # backfill the existing admin user's email column. DirectMail creds are
 # optional — when unset, magic links fall through to a dev log file.
-CREATOR_EMAIL="2350344031@qq.com"
-# DIRECT_MAIL_ACCESS_KEY_ID=
-# DIRECT_MAIL_ACCESS_KEY_SECRET=
-# DIRECT_MAIL_FROM=
-# DIRECT_MAIL_FROM_NAME="LB Blog"
-# DIRECT_MAIL_REGION="cn-hangzhou"
+CREATOR_EMAIL="${CREATOR_EMAIL:-2350344031@qq.com}"
+DIRECT_MAIL_ACCESS_KEY_ID="${DIRECT_MAIL_ACCESS_KEY_ID:-}"
+DIRECT_MAIL_ACCESS_KEY_SECRET="${DIRECT_MAIL_ACCESS_KEY_SECRET:-}"
+DIRECT_MAIL_FROM="${DIRECT_MAIL_FROM:-}"
+DIRECT_MAIL_FROM_NAME="${DIRECT_MAIL_FROM_NAME:-LB Blog}"
+DIRECT_MAIL_REGION="${DIRECT_MAIL_REGION:-cn-hangzhou}"
 
 # Recovery: set to "true" to enable username+password login as a fallback.
 # Default false. The AI client (P4) uses a separate API-token path.
-ALLOW_PASSWORD_LOGIN="false"
+ALLOW_PASSWORD_LOGIN="${ALLOW_PASSWORD_LOGIN:-false}"
 ENVEOF
 
 rm -f "$DEPLOY_DIR/tsconfig.json" "$DEPLOY_DIR/tsconfig.tsbuildinfo"
