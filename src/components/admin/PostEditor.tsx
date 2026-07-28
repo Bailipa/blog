@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAdminToast } from '@/components/admin/ToastProvider'
+import { generateSlug } from '@/lib/slug'
 
 interface PostEditorProps {
   initialData?: {
@@ -75,13 +76,6 @@ export default function PostEditor({ initialData }: PostEditorProps) {
       setTags(tagJson.data || [])
     })
   }, [])
-
-  const autoSlug = (val: string) => {
-    setTitle(val)
-    if (!isEdit) {
-      setSlug(val.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, ''))
-    }
-  }
 
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     const formData = new FormData()
@@ -179,12 +173,33 @@ export default function PostEditor({ initialData }: PostEditorProps) {
       <div className="admin-editor-main">
         <div className="admin-editor-field">
           <Label htmlFor="title">标题</Label>
-          <Input id="title" value={title} onChange={(e) => autoSlug(e.target.value)} placeholder="文章标题" />
+          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="文章标题" />
         </div>
 
         <div className="admin-editor-field">
           <Label htmlFor="slug">Slug</Label>
-          <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="url-slug" />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              id="slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="留空将自动生成"
+              style={{ flex: 1 }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSlug(generateSlug())}
+              disabled={saving}
+              title="生成随机 slug"
+            >
+              🎲 生成
+            </Button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 4 }}>
+            URL 路径段，仅含小写字母、数字、连字符。留空则保存时自动生成。
+          </p>
         </div>
 
         <div className="admin-editor-field">

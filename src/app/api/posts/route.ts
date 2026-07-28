@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
 import { revalidatePath } from 'next/cache'
+import { resolveSlug } from '@/lib/slug'
 
 export async function GET(req: NextRequest) {
   try {
@@ -54,10 +55,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    const slug = resolveSlug(body.slug)
     const post = await prisma.post.create({
       data: {
         title: body.title,
-        slug: body.slug,
+        slug,
         content: body.content || '',
         excerpt: body.excerpt,
         coverImage: body.coverImage,

@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
 import { revalidatePath } from 'next/cache'
+import { resolveSlug } from '@/lib/slug'
 
 export async function GET(
   _req: NextRequest,
@@ -42,11 +43,12 @@ export async function PUT(
 
     await prisma.postTag.deleteMany({ where: { postId: id } })
 
+    const slug = resolveSlug(body.slug)
     const post = await prisma.post.update({
       where: { id },
       data: {
         title: body.title,
-        slug: body.slug,
+        slug,
         content: body.content,
         excerpt: body.excerpt,
         coverImage: body.coverImage,
