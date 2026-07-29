@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
+import { resolveAvatarUrl } from '@/lib/username'
 
 interface AuthorInfo {
   userId: string | null
@@ -17,6 +18,17 @@ interface CommentRow {
   content: string
   createdAt: string
   author: AuthorInfo | null
+}
+
+interface MeUser {
+  id: string
+  username: string | null
+  email: string | null
+  name: string | null
+  bio: string | null
+  avatarUrl: string | null
+  onboarded: boolean
+  isAdmin: boolean
 }
 
 interface CommentsProps {
@@ -37,10 +49,21 @@ export default function Comments({ postSlug }: CommentsProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  // Authoritative onboarded state — fetched from /api/users/me, NOT taken from
+  // the session JWT. The session JWT can be stale across deploys (existing
+  // users have tokens issued before we added the username field), and trusting
+  // the JWT would mis-classify them as "not onboarded" while the DB says they
+  // are. /api/users/me is the source of truth.
+  const [me, setMe] = useState<MeUser | null>(null)
+  const [meLoaded, setMeLoaded] = useState(false)
 
   const isLoggedIn = status === 'authenticated' && session?.user
-  const myUsername = isLoggedIn ? session.user.username : null
-  const isOnboarded = !!myUsername
+  // isOnboarded comes from /api/users/me when available; falls back to
+  // session.user.username so the UI updates instantly when the JWT eventually
+  // gets refreshed.
+  const isOnboarded = me?.onboarded ?? !!session?.user?.username
+  const myUsername = me?.username ?? session?.user?.username ?? null
+  const myAvatar = resolveAvatarUrl({ avatarUrl: me?.avatarUrl ?? null, email: me?.email ?? session?.user?.email ?? null })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -55,6 +78,27 @@ export default function Comments({ postSlug }: CommentsProps) {
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
+
+  // Fetch authoritative user state from DB. Refreshes on login/logout so the
+  // locked/review/comment-submit state matches the DB, not a stale JWT.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setMe(null)
+      setMeLoaded(true)
+      return
+    }
+    let cancelled = false
+    fetch('/api/users/me', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => {
+        if (cancelled) return
+        setMe(j?.user ?? null)
+        setMeLoaded(true)
+      })
+      .catch(() => { if (!cancelled) setMeLoaded(true) })
+    return () => { cancelled = true }
+  }, [isLoggedIn, status])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,13 +145,19 @@ export default function Comments({ postSlug }: CommentsProps) {
     }
   }
 
+  const callbackUrl = typeof window !== 'undefined' ? window.location.pathname : '/'
+
+  // While we're still loading me, render a neutral placeholder so the buttons
+  // don't briefly mis-classify a logged-in user as anonymous.
+  const showAuthedState = isLoggedIn && meLoaded
+
   return (
     <section className="blog-comments">
       <header className="blog-comments-header">
         <h2 className="blog-comments-title">评论</h2>
         <p className="blog-comments-notice">
           需要登录账号才能发表评论。
-          {isLoggedIn && isOnboarded && (
+          {showAuthedState && isOnboarded && (
             <>当前以 <strong style={{ color: 'var(--gold-bright)' }}>@{myUsername}</strong> 身份发表评论。</>
           )}
         </p>
@@ -118,18 +168,25 @@ export default function Comments({ postSlug }: CommentsProps) {
           <Button
             type="button"
             onClick={() =>
-              router.push(`/login?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`)
+              router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
             }
           >
             登录后评论
           </Button>
+        </div>
+      ) : !meLoaded ? (
+        // Still resolving /api/users/me — render a placeholder button so the
+        // button isn't a flash of "先设置用户名" for users who ARE onboarded
+        // (e.g., creator with a stale JWT).
+        <div className="blog-comments-locked">
+          <Button type="button" disabled>加载中…</Button>
         </div>
       ) : !isOnboarded ? (
         <div className="blog-comments-locked">
           <Button
             type="button"
             onClick={() =>
-              router.push(`/onboarding?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`)
+              router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
             }
           >
             先设置用户名
@@ -137,6 +194,19 @@ export default function Comments({ postSlug }: CommentsProps) {
         </div>
       ) : (
         <form className="blog-comments-form" onSubmit={submit}>
+          <div className="blog-comments-form-meta" style={{ marginBottom: 8 }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>
+              {myAvatar && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={myAvatar}
+                  alt=""
+                  style={{ width: 20, height: 20, borderRadius: '50%', verticalAlign: 'middle', marginRight: 6, objectFit: 'cover' }}
+                />
+              )}
+              @{myUsername}
+            </span>
+          </div>
           <textarea
             className="blog-comments-textarea"
             value={content}

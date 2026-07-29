@@ -78,23 +78,55 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       : []),
   ],
   callbacks: {
-    jwt: ({ token, user, trigger }) => {
+    jwt: async ({ token, user, trigger }) => {
       if (user) {
+        // Fresh sign-in: copy what we know about the user.
         ;(token as Record<string, unknown>).id = user.id
         ;(token as Record<string, unknown>).isAdmin = (user as { isAdmin: boolean }).isAdmin
-        ;(token as Record<string, unknown>).username = (user as { username?: string | null }).username ?? null
-      }
-      // On `update()` calls (e.g. after profile edit), refresh username from DB
-      // so the session reflects the latest value.
-      if (trigger === 'update' && token.sub) {
-        // Best-effort: leave as-is unless caller passes new data via session()
+        // Only set token.username if the user actually has one. Leave it
+        // `undefined` otherwise — that's the signal below to refresh from
+        // the DB on the next session call. We must NOT store `null`
+        // unconditionally, otherwise we can't tell apart "real null, user
+        // never onboarded" from "we never knew".
+        const u = (user as { username?: string | null }).username
+        if (u) {
+          ;(token as Record<string, unknown>).username = u
+        }
+      } else if (trigger === 'update' && token.sub) {
+        // Caller explicitly asked to refresh via useSession().update({...}).
+        // Used after profile edit so the next render sees the new username.
+        const prisma = (await import('./prisma')).default
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { username: true },
+        })
+        if (fresh?.username) {
+          ;(token as Record<string, unknown>).username = fresh.username
+        }
+      } else if (
+        (token as Record<string, unknown>).id &&
+        (token as Record<string, unknown>).username === undefined
+      ) {
+        // Stale JWT from a previous deploy that didn't carry username.
+        // Refresh once from the DB; subsequent calls will short-circuit
+        // because token.username will be set.
+        const prisma = (await import('./prisma')).default
+        const id = (token as Record<string, unknown>).id as string
+        const fresh = await prisma.user.findUnique({
+          where: { id },
+          select: { username: true },
+        })
+        if (fresh?.username) {
+          ;(token as Record<string, unknown>).username = fresh.username
+        }
       }
       return token
     },
     session: ({ session, token }) => {
       session.user.id = (token as Record<string, string>).id
       session.user.isAdmin = (token as Record<string, boolean>).isAdmin
-      session.user.username = (token as Record<string, string | null>).username ?? null
+      // null = onboarded false (intentional), undefined shouldn't reach here
+      session.user.username = (token as Record<string, string | null | undefined>).username ?? null
       return session
     },
   },
