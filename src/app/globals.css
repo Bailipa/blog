@@ -821,3 +821,34 @@ body::before {
   0%, 100% { opacity: 0.35; transform: scale(0.8); }
   50% { opacity: 1; transform: scale(1.2); }
 }
+
+/* ===== Login OTP Input ===== */
+.login-otp-block { margin-top: 8px; padding: 16px; border-radius: 10px; background: rgba(245,199,26,0.04); border: 1px dashed rgba(245,199,26,0.2); }
+.login-otp-label { font-size: 0.82rem; color: var(--text-dim); margin: 0 0 12px; text-align: center; }
+.login-otp-inputs { display: flex; gap: 8px; justify-content: center; }
+.login-otp-cell {
+  width: 44px; height: 52px;
+  text-align: center;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 1.6rem; font-weight: 600;
+  background: rgba(10,8,6,0.6);
+  border: 1px solid rgba(245,199,26,0.2);
+  border-radius: 8px;
+  color: var(--gold-bright);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  -moz-appearance: textfield;
+}
+.login-otp-cell::-webkit-outer-spin-button,
+.login-otp-cell::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.login-otp-cell:focus {
+  border-color: var(--gold-bright);
+  background: rgba(245,199,26,0.08);
+  box-shadow: 0 0 0 2px rgba(245,199,26,0.15);
+}
+.login-otp-cell:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 480px) {
+  .login-otp-cell { width: 38px; height: 46px; font-size: 1.4rem; }
+  .login-otp-inputs { gap: 5px; }
+}

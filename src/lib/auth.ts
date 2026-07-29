@@ -76,6 +76,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }),
         ]
       : []),
+    // P5: 6-digit OTP code fallback. authorize looks up the row by
+    // (identifier, code) and consumes it single-use.
+    Credentials({
+      id: 'magic-code',
+      name: 'magic-code',
+      credentials: {
+        email: { label: 'email', type: 'text' },
+        code: { label: 'code', type: 'text' },
+      },
+      authorize: async (credentials) => {
+        const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : ''
+        const code = typeof credentials?.code === 'string' ? credentials.code.trim() : ''
+        if (!email || !code) return null
+        const { consumeMagicCode } = await import('./magic-link')
+        const result = await consumeMagicCode(email, code)
+        if (!result.ok) return null
+        const prisma = (await import('./prisma')).default
+        const user = await prisma.user.findUnique({ where: { email: result.identifier } })
+        if (!user || user.deletedAt) return null
+        return {
+          id: user.id,
+          name: user.name ?? user.username,
+          username: user.username,
+          email: user.email ?? undefined,
+          isAdmin: user.isAdmin,
+        }
+      },
+    }),
   ],
   callbacks: {
     jwt: async ({ token, user, trigger }) => {

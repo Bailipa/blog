@@ -212,6 +212,15 @@ async function main() {
   await addColumnIfMissing('Comment', 'authorName', 'TEXT')
   await addColumnIfMissing('Comment', 'authorAvatar', 'TEXT')
 
+  // P5: cross-browser pairing + OTP code support on VerificationToken.
+  // Each new column is additive — old magic-link rows still work.
+  await addColumnIfMissing('VerificationToken', 'pairToken', 'TEXT')
+  await addColumnIfMissing('VerificationToken', 'code', 'TEXT')
+  await addColumnIfMissing('VerificationToken', 'paired', 'BOOLEAN NOT NULL DEFAULT 0')
+  await addColumnIfMissing('VerificationToken', 'consumed', 'BOOLEAN NOT NULL DEFAULT 0')
+  await addIndexIfMissing('VerificationToken_pairToken_key', 'VerificationToken', ['pairToken'])
+  await addIndexIfMissing('VerificationToken_code_key', 'VerificationToken', ['code'])
+
   // Comment.authorId index (for /u/[username] listing)
   await addIndexIfMissing('Comment_authorId_idx', 'Comment', ['authorId'])
 

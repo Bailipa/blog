@@ -22,6 +22,7 @@ export type MagicLinkEmail = {
   subject: string
   htmlBody: string
   url: string
+  code?: string
 }
 
 export type SendResult =
@@ -146,12 +147,13 @@ async function sendViaDebugLog(email: MagicLinkEmail): Promise<SendResult> {
   return { ok: true, via: 'debug-log' }
 }
 
-export async function sendMagicLink(args: { to: string; url: string }): Promise<SendResult> {
+export async function sendMagicLink(args: { to: string; url: string; code?: string }): Promise<SendResult> {
   const email: MagicLinkEmail = {
     to: args.to,
-    subject: '登录 LB Blog',
-    htmlBody: magicLinkHtml(args.url),
+    subject: '您的 LB Blog 登录验证码',
+    htmlBody: magicLinkHtml(args.url, args.code),
     url: args.url,
+    code: args.code,
   }
   if (hasDirectMailCreds()) {
     return sendViaDirectMail(email)
@@ -159,13 +161,28 @@ export async function sendMagicLink(args: { to: string; url: string }): Promise<
   return sendViaDebugLog(email)
 }
 
-function magicLinkHtml(url: string): string {
+function magicLinkHtml(url: string, code?: string): string {
+  // P5: show BOTH a 6-digit code (works in any email client including
+  // QQ Mail / Gmail in-app browsers) AND a magic-link button (works when
+  // the link opens in the user's main browser). User picks whichever
+  // is easier in their situation.
+  const codeBlock = code
+    ? `
+  <div style="margin:0 0 8px;font-size:0.85rem;color:#a08960;">您的验证码（10 分钟内有效）</div>
+  <div style="margin:0 0 24px;padding:18px 16px;background:rgba(245,199,26,0.08);border:1px dashed rgba(245,199,26,0.4);border-radius:10px;text-align:center;">
+    <span style="font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;font-size:2.2rem;font-weight:700;letter-spacing:0.4em;color:#f5c71a;">${code}</span>
+  </div>
+  <div style="margin:0 0 24px;font-size:0.82rem;color:#a08960;text-align:center;">或者点击下方按钮一键登录：</div>
+  `
+    : ''
+
   return `<!doctype html><html><body style="font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:#0f0f13;color:#e2e8f0;padding:40px 16px;">
 <div style="max-width:480px;margin:0 auto;background:#0a0a0e;border:1px solid rgba(245,199,26,0.2);border-radius:12px;padding:32px;">
   <h1 style="margin:0 0 16px;font-size:1.4rem;color:#f5c71a;">登录 LB Blog</h1>
-  <p style="margin:0 0 24px;line-height:1.6;color:#a08960;">点击下方按钮登录管理后台。链接 15 分钟内有效，仅可使用一次。</p>
-  <p style="margin:0 0 24px;">
-    <a href="${url}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#8b6914,#f5c71a);color:#0a0806;text-decoration:none;border-radius:8px;font-weight:600;">登录</a>
+  <p style="margin:0 0 24px;line-height:1.6;color:#a08960;">点击下方按钮在浏览器中完成登录，或复制邮件中的验证码。链接 10 分钟内有效，仅可使用一次。</p>
+  ${codeBlock}
+  <p style="margin:0 0 24px;text-align:center;">
+    <a href="${url}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#8b6914,#f5c71a);color:#0a0806;text-decoration:none;border-radius:8px;font-weight:600;">在浏览器中登录</a>
   </p>
   <p style="margin:0 0 8px;font-size:0.85rem;color:#a08960;">如果按钮无效，请复制链接到浏览器：</p>
   <p style="margin:0;font-size:0.8rem;word-break:break-all;color:#c99a2a;">${url}</p>
