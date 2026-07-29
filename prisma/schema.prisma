@@ -11,11 +11,27 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
-  username  String   @unique
+  username  String?  @unique
   password  String?
   email     String?  @unique
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  // P4: public profile fields
+  name             String?
+  bio              String?
+  avatarUrl        String?        // null = use Gravatar fallback
+  onboarded        Boolean        @default(false)   // has set username via /onboarding
+  emailVerified    DateTime?
+  notifyOnReply    Boolean        @default(true)
+  notifyOnNewPost  Boolean        @default(false)
+  deletedAt        DateTime?      // soft-delete (R2)
+
+  // P5+: paywall foundation (no UI yet, all nullable)
+  subscriptionTier       String?    // null | "free" | "paid"
+  subscriptionExpiresAt  DateTime?
+  purchasedPosts         String?    // JSON array of post ids
+
   comments  Comment[]
 }
 
@@ -38,6 +54,10 @@ model Post {
   featured    Boolean    @default(false)
   viewCount   Int        @default(0)
   publishedAt DateTime?
+
+  // P5+: paywall foundation (no UI yet)
+  accessTier  String     @default("free")   // "free" | "paid"
+  priceCents  Int?                         // optional single-purchase price in cents
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   categoryId  String?
@@ -137,6 +157,10 @@ model Comment {
   status    String   @default("VISIBLE")
   authorId  String?
   ipHash    String?
+  // P4: snapshot of author identity at comment time. Survives username
+  // changes and account deletion. authorId stays the live FK.
+  authorName   String?
+  authorAvatar String?
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -144,4 +168,5 @@ model Comment {
   @@index([postId, status, createdAt])
   @@index([createdAt])
   @@index([ipHash, createdAt])
+  @@index([authorId])
 }

@@ -12,6 +12,9 @@ interface CommentRow {
   createdAt: string
   postId: string
   ipHash: string | null
+  authorId: string | null
+  authorName: string | null
+  authorAvatar: string | null
   post: { slug: string; title: string }
 }
 
@@ -168,6 +171,22 @@ export default function AdminCommentsPage() {
                         color: c.status === 'VISIBLE' ? '#4ade80' : '#f87171',
                       }}>
                         {c.status === 'VISIBLE' ? '可见' : '已隐藏'}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>
+                        {c.authorId ? (
+                          <>
+                            <a
+                              href={`/u/${c.authorName ?? ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: 'var(--gold-mid)', textDecoration: 'none' }}
+                            >
+                              @{c.authorName ?? 'unknown'}
+                            </a>
+                          </>
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)' }}>匿名访客（历史）</span>
+                        )}
                       </span>
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>
                         {new Date(c.createdAt).toLocaleString('zh-CN')}

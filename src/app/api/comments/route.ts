@@ -14,9 +14,13 @@ import {
   COMMENT_IP_RATE_WINDOW_MS,
 } from '@/lib/comments'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { gravatarUrlFor } from '@/lib/username'
 
 export const runtime = 'nodejs'
 
+// GET — public list of VISIBLE comments for a post. Includes a normalized
+// `author` block so the client can render user identity (or "匿名访客" for
+// legacy anonymous comments from before login-required cutover).
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -31,20 +35,51 @@ export async function GET(req: NextRequest) {
     if (!post || post.status !== 'PUBLISHED') {
       return NextResponse.json({ data: [] })
     }
-    const comments = await prisma.comment.findMany({
+    const rows = await prisma.comment.findMany({
       where: { postId: post.id, status: 'VISIBLE' },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, content: true, createdAt: true },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        authorId: true,
+        authorName: true,
+        authorAvatar: true,
+      },
     })
-    return NextResponse.json({ data: comments })
+    const data = rows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      author: r.authorId
+        ? {
+            userId: r.authorId,
+            authorName: r.authorName,
+            authorAvatar: r.authorAvatar,
+            isLegacy: false,
+          }
+        : null,
+    }))
+    return NextResponse.json({ data })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)
     return NextResponse.json(body, { status })
   }
 }
 
+// POST — require authenticated user with a username (post-onboarding).
+// Snapshots author name + avatar so username changes / account deletions
+// don't rewrite history.
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: '请登录后再评论' },
+        { status: 401 },
+      )
+    }
+
     const body = await req.json().catch(() => ({}))
     const content = sanitizeComment(body.content)
     const postSlug = typeof body.postSlug === 'string' ? body.postSlug.trim() : ''
@@ -60,8 +95,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '文章不存在或未发布' }, { status: 404 })
     }
 
-    const session = await auth()
-    const authorId = session?.user?.id ?? null
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        avatarUrl: true,
+        onboarded: true,
+        deletedAt: true,
+      },
+    })
+    if (!me || me.deletedAt) {
+      return NextResponse.json({ error: '账号不可用' }, { status: 403 })
+    }
+    if (!me.onboarded || !me.username) {
+      return NextResponse.json(
+        { error: '请先完善个人资料（设置用户名）' },
+        { status: 403 },
+      )
+    }
 
     const ip = getRequestIp(req)
     const salt = process.env.NEXTAUTH_SECRET ?? 'fallback-salt'
@@ -78,15 +131,23 @@ export async function POST(req: NextRequest) {
     const breaker = await getBreaker(prisma)
     const status = breaker.open ? 'HIDDEN' : 'VISIBLE'
 
+    // Snapshot author identity at comment time
+    const authorAvatar = me.avatarUrl ?? gravatarUrlFor(null, 80)
+
     const comment = await prisma.comment.create({
       data: {
         postId: post.id,
         content,
         status,
-        authorId,
+        authorId: me.id,
+        authorName: me.username,
+        authorAvatar,
         ipHash,
       },
-      select: { id: true, status: true, createdAt: true },
+      select: {
+        id: true, status: true, createdAt: true,
+        authorId: true, authorName: true, authorAvatar: true,
+      },
     })
 
     const since = new Date(Date.now() - COMMENT_GLOBAL_RATE_WINDOW_MS)

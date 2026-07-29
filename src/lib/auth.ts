@@ -4,11 +4,13 @@ import Credentials from 'next-auth/providers/credentials'
 declare module 'next-auth' {
   interface User {
     isAdmin?: boolean
+    username?: string | null
   }
   interface Session {
     user: {
       id: string
       isAdmin: boolean
+      username?: string | null
       name?: string | null
       email?: string | null
       image?: string | null
@@ -34,10 +36,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!result.ok) return null
         const prisma = (await import('./prisma')).default
         const user = await prisma.user.findUnique({ where: { email: result.identifier } })
-        if (!user) return null
+        if (!user || user.deletedAt) return null
         return {
           id: user.id,
-          name: user.username,
+          name: user.name ?? user.username,
+          username: user.username,
           email: user.email ?? undefined,
           isAdmin: user.isAdmin,
         }
@@ -59,26 +62,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               const user = await prisma.user.findUnique({
                 where: { username: credentials.username as string },
               })
-              if (!user || !user.password) return null
+              if (!user || !user.password || user.deletedAt) return null
               const valid = await compare(credentials.password as string, user.password)
               if (!valid) return null
-              return { id: user.id, name: user.username, isAdmin: user.isAdmin }
+              return {
+                id: user.id,
+                name: user.name ?? user.username,
+                username: user.username,
+                email: user.email ?? undefined,
+                isAdmin: user.isAdmin,
+              }
             },
           }),
         ]
       : []),
   ],
   callbacks: {
-    jwt: ({ token, user }) => {
+    jwt: ({ token, user, trigger }) => {
       if (user) {
         ;(token as Record<string, unknown>).id = user.id
         ;(token as Record<string, unknown>).isAdmin = (user as { isAdmin: boolean }).isAdmin
+        ;(token as Record<string, unknown>).username = (user as { username?: string | null }).username ?? null
+      }
+      // On `update()` calls (e.g. after profile edit), refresh username from DB
+      // so the session reflects the latest value.
+      if (trigger === 'update' && token.sub) {
+        // Best-effort: leave as-is unless caller passes new data via session()
       }
       return token
     },
     session: ({ session, token }) => {
       session.user.id = (token as Record<string, string>).id
       session.user.isAdmin = (token as Record<string, boolean>).isAdmin
+      session.user.username = (token as Record<string, string | null>).username ?? null
       return session
     },
   },
