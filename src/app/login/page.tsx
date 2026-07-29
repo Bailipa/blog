@@ -1,7 +1,8 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { LoginSuccess, type LoginSuccessUser } from '@/components/auth/LoginSuccess'
 
 // Next.js needs this page to opt out of static prerender because
 // useSearchParams() inside the child requires a runtime context.
@@ -10,6 +11,9 @@ import { useSearchParams } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const POLL_INTERVAL_MS = 3000
+const POLL_TIMEOUT_MS = 5 * 60 * 1000  // 5 minutes — comfortably covers the 15min magic-link TTL
 
 export default function LoginPage() {
   return (
@@ -26,6 +30,13 @@ function LoginPageInner() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [debugLink, setDebugLink] = useState<string | null>(null)
+  // When polling detects the session, swap the entire UI to the
+  // shared <LoginSuccess> component. This gives the user the same
+  // "✅ 登录成功" feedback whether they click the email link in this
+  // tab or in any other tab.
+  const [verifiedUser, setVerifiedUser] = useState<LoginSuccessUser | null>(null)
+
+  const callbackUrl = search.get('callbackUrl') || '/'
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -38,8 +49,6 @@ function LoginPageInner() {
     else if (reason === 'session-missing') setError('会话失效，请重新登录。')
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [search])
-
-  const callbackUrl = search.get('callbackUrl') || '/'
 
   const requestLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,6 +80,62 @@ function LoginPageInner() {
     }
   }
 
+  // Once the email is sent, poll /api/users/me every 3s. When the user
+  // clicks the link in the email (in this tab OR another tab — cookies
+  // are shared), the session is set globally and our next poll detects it.
+  // Then we swap to the <LoginSuccess> UI.
+  //
+  // Polling uses /api/users/me rather than /api/auth/session because the
+  // former additionally tells us username/onboarded/avatarUrl etc., which
+  // LoginSuccess needs.
+  const pollStartedAt = useRef<number | null>(null)
+  useEffect(() => {
+    if (!sent) return
+    if (verifiedUser) return
+    pollStartedAt.current = Date.now()
+
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      if (pollStartedAt.current && Date.now() - pollStartedAt.current > POLL_TIMEOUT_MS) {
+        return  // give up after 5 min; the user can refresh to start over
+      }
+      try {
+        const r = await fetch('/api/users/me', { cache: 'no-store' })
+        if (cancelled) return
+        if (r.ok) {
+          const j = await r.json()
+          const u = j?.user
+          if (u?.id) {
+            setVerifiedUser({
+              username: u.username,
+              name: u.name,
+              email: u.email,
+              avatarUrl: u.avatarUrl,
+              isAdmin: u.isAdmin,
+              onboarded: u.onboarded,
+            })
+            return
+          }
+        }
+      } catch {
+        // ignore; try again next tick
+      }
+      if (!cancelled) setTimeout(tick, POLL_INTERVAL_MS)
+    }
+    setTimeout(tick, POLL_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      pollStartedAt.current = null
+    }
+  }, [sent, verifiedUser])
+
+  // Polling detected a session → render the shared success UI.
+  if (verifiedUser) {
+    return <LoginSuccess user={verifiedUser} callbackUrl={callbackUrl} />
+  }
+
   if (sent) {
     return (
       <div className="login-page">
@@ -82,6 +147,9 @@ function LoginPageInner() {
           </p>
           <p className="login-hint">
             首次登录会引导你设置用户名，之后可前往个人主页和发表评论。
+          </p>
+          <p className="login-hint" style={{ color: 'var(--gold-mid)' }}>
+            <span className="login-poll-dot" aria-hidden /> 正在等待邮箱验证…
           </p>
           {debugLink && (
             <div className="login-dev-block">
