@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest) {
 
     const { compare } = await import('bcryptjs')
     if (!user.password) {
-      return NextResponse.json({ error: '当前账号未设置密码（magic-link 登录用户），无法修改。' }, { status: 400 })
+      return NextResponse.json({ error: '当前账号未设置密码，请先通过 set-admin-password 脚本初始化。' }, { status: 400 })
     }
     const valid = await compare(currentPassword, user.password)
     if (!valid) return NextResponse.json({ error: '当前密码错误' }, { status: 400 })

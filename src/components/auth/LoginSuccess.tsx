@@ -19,12 +19,11 @@ interface LoginSuccessProps {
   countdownSeconds?: number
 }
 
-// Renders the "✅ 登录成功" page that shows briefly after a magic-link click
-// (or after polling on /login detects a session). Shows the user identity,
-// a destination button, and auto-redirects after `countdownSeconds` (default 3s).
-//
-// Used by both /login/success (the landing page) and /login (when polling
-// detects the session). Both render the same visual — single source of truth.
+// Renders the "✅ 登录成功" page that shows briefly after a successful
+// OTP verification. Shows the user identity, a destination button, and
+// auto-redirects after `countdownSeconds` (default 3s). The /login page
+// renders this inline once /api/auth/public/verify-code has set the
+// session cookie and returned the user payload.
 export function LoginSuccess({ user, callbackUrl, countdownSeconds = 3 }: LoginSuccessProps) {
   const router = useRouter()
   const [remaining, setRemaining] = useState(countdownSeconds)

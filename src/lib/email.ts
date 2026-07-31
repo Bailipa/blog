@@ -8,28 +8,27 @@
 //      DIRECT_MAIL_FROM_NAME    (display name, optional)
 //
 // 2. DEV: When DirectMail creds are absent, we never call out. The full
-//    rendered email (subject + body) plus the magic-link URL are written to
-//    console.log AND to /tmp/magic-link-debug.log (readable from SSH). The
-//    request-link API also returns the URL inline so the local UI can show
-//    it without leaving the page.
+//    rendered email (subject + body) plus the OTP code are written to
+//    console.log AND to /tmp/otp-debug.log (readable from SSH). The
+//    request-code API also returns the code inline so the local UI can
+//    show it without leaving the page.
 
 import { createHmac, randomUUID } from 'crypto'
 import { mkdir, appendFile } from 'fs/promises'
 import path from 'path'
 
-export type MagicLinkEmail = {
+export type OtpEmail = {
   to: string
   subject: string
   htmlBody: string
-  url: string
-  code?: string
+  code: string
 }
 
 export type SendResult =
   | { ok: true; via: 'directmail' | 'debug-log' }
   | { ok: false; error: string }
 
-const DEBUG_LOG_PATH = '/tmp/magic-link-debug.log'
+const DEBUG_LOG_PATH = '/tmp/otp-debug.log'
 
 function hasDirectMailCreds() {
   return !!(
@@ -39,7 +38,7 @@ function hasDirectMailCreds() {
   )
 }
 
-async function sendViaDirectMail(email: MagicLinkEmail): Promise<SendResult> {
+async function sendViaDirectMail(email: OtpEmail): Promise<SendResult> {
   const ak = process.env.DIRECT_MAIL_ACCESS_KEY_ID!
   const sk = process.env.DIRECT_MAIL_ACCESS_KEY_SECRET!
   const from = process.env.DIRECT_MAIL_FROM!
@@ -126,13 +125,13 @@ function percentEncode(s: string): string {
     .replace(/%7E/g, '~')
 }
 
-async function sendViaDebugLog(email: MagicLinkEmail): Promise<SendResult> {
+async function sendViaDebugLog(email: OtpEmail): Promise<SendResult> {
   const line = [
     '---',
     `at: ${new Date().toISOString()}`,
     `to: ${email.to}`,
     `subject: ${email.subject}`,
-    `url: ${email.url}`,
+    `code: ${email.code}`,
     `body:`,
     email.htmlBody,
     '',
@@ -147,12 +146,11 @@ async function sendViaDebugLog(email: MagicLinkEmail): Promise<SendResult> {
   return { ok: true, via: 'debug-log' }
 }
 
-export async function sendMagicLink(args: { to: string; url: string; code?: string }): Promise<SendResult> {
-  const email: MagicLinkEmail = {
+export async function sendOtpCode(args: { to: string; code: string }): Promise<SendResult> {
+  const email: OtpEmail = {
     to: args.to,
     subject: '您的 LB Blog 登录验证码',
-    htmlBody: magicLinkHtml(args.url, args.code),
-    url: args.url,
+    htmlBody: otpHtml(args.code),
     code: args.code,
   }
   if (hasDirectMailCreds()) {
@@ -161,31 +159,15 @@ export async function sendMagicLink(args: { to: string; url: string; code?: stri
   return sendViaDebugLog(email)
 }
 
-function magicLinkHtml(url: string, code?: string): string {
-  // P5: show BOTH a 6-digit code (works in any email client including
-  // QQ Mail / Gmail in-app browsers) AND a magic-link button (works when
-  // the link opens in the user's main browser). User picks whichever
-  // is easier in their situation.
-  const codeBlock = code
-    ? `
-  <div style="margin:0 0 8px;font-size:0.85rem;color:#a08960;">您的验证码（10 分钟内有效）</div>
-  <div style="margin:0 0 24px;padding:18px 16px;background:rgba(245,199,26,0.08);border:1px dashed rgba(245,199,26,0.4);border-radius:10px;text-align:center;">
-    <span style="font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;font-size:2.2rem;font-weight:700;letter-spacing:0.4em;color:#f5c71a;">${code}</span>
-  </div>
-  <div style="margin:0 0 24px;font-size:0.82rem;color:#a08960;text-align:center;">或者点击下方按钮一键登录：</div>
-  `
-    : ''
-
+function otpHtml(code: string): string {
   return `<!doctype html><html><body style="font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:#0f0f13;color:#e2e8f0;padding:40px 16px;">
 <div style="max-width:480px;margin:0 auto;background:#0a0a0e;border:1px solid rgba(245,199,26,0.2);border-radius:12px;padding:32px;">
   <h1 style="margin:0 0 16px;font-size:1.4rem;color:#f5c71a;">登录 LB Blog</h1>
-  <p style="margin:0 0 24px;line-height:1.6;color:#a08960;">点击下方按钮在浏览器中完成登录，或复制邮件中的验证码。链接 10 分钟内有效，仅可使用一次。</p>
-  ${codeBlock}
-  <p style="margin:0 0 24px;text-align:center;">
-    <a href="${url}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#8b6914,#f5c71a);color:#0a0806;text-decoration:none;border-radius:8px;font-weight:600;">在浏览器中登录</a>
-  </p>
-  <p style="margin:0 0 8px;font-size:0.85rem;color:#a08960;">如果按钮无效，请复制链接到浏览器：</p>
-  <p style="margin:0;font-size:0.8rem;word-break:break-all;color:#c99a2a;">${url}</p>
+  <p style="margin:0 0 8px;line-height:1.6;color:#a08960;">您的验证码（10 分钟内有效，仅可使用一次）：</p>
+  <div style="margin:0 0 24px;padding:24px 16px;background:rgba(245,199,26,0.08);border:1px dashed rgba(245,199,26,0.4);border-radius:10px;text-align:center;">
+    <span style="font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;font-size:2.6rem;font-weight:700;letter-spacing:0.5em;color:#f5c71a;">${code}</span>
+  </div>
+  <p style="margin:0 0 8px;line-height:1.6;color:#a08960;">请回到 LB Blog 的登录页（<a href="https://blog.dogeggcode.cyou/login" style="color:#f5c71a;">blog.dogeggcode.cyou/login</a>）输入这 6 位数字完成登录。</p>
   <hr style="margin:24px 0;border:none;border-top:1px solid rgba(245,199,26,0.1);">
   <p style="margin:0;font-size:0.78rem;color:#a08960;">如果不是你本人请求，请忽略此邮件。</p>
 </div>

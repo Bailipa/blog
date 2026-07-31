@@ -58,6 +58,21 @@ async function addIndexIfMissing(indexName, table, cols) {
   return true
 }
 
+// Drop a column (and any associated index, since SQLite refuses to drop
+// a column that has an index on it). Idempotent: skips if column is
+// already absent. `indexName` may be null when no index is tied to the
+// column. Requires SQLite >= 3.35 (ALTER TABLE DROP COLUMN).
+async function dropColumnAndIndex(table, colName, indexName) {
+  const cols = await tableInfo(table)
+  if (!cols.some((c) => c.name === colName)) return false
+  if (indexName) {
+    await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "${indexName}"`)
+  }
+  await prisma.$executeRawUnsafe(`ALTER TABLE "${table}" DROP COLUMN "${colName}"`)
+  console.log(`[migrate] dropped "${table}"."${colName}"${indexName ? ` + index "${indexName}"` : ''}`)
+  return true
+}
+
 async function main() {
   // Step 1: CREATE TABLE IF NOT EXISTS for new tables
   for (const sql of STATEMENTS) {
@@ -212,14 +227,14 @@ async function main() {
   await addColumnIfMissing('Comment', 'authorName', 'TEXT')
   await addColumnIfMissing('Comment', 'authorAvatar', 'TEXT')
 
-  // P5: cross-browser pairing + OTP code support on VerificationToken.
-  // Each new column is additive — old magic-link rows still work.
-  await addColumnIfMissing('VerificationToken', 'pairToken', 'TEXT')
+  // OTP code support on VerificationToken. pairToken + paired were P5
+  // cross-browser-pairing columns; we dropped the magic-link click flow,
+  // so they get DROPPED below (idempotent: only if present).
   await addColumnIfMissing('VerificationToken', 'code', 'TEXT')
-  await addColumnIfMissing('VerificationToken', 'paired', 'BOOLEAN NOT NULL DEFAULT 0')
   await addColumnIfMissing('VerificationToken', 'consumed', 'BOOLEAN NOT NULL DEFAULT 0')
-  await addIndexIfMissing('VerificationToken_pairToken_key', 'VerificationToken', ['pairToken'])
   await addIndexIfMissing('VerificationToken_code_key', 'VerificationToken', ['code'])
+  await dropColumnAndIndex('VerificationToken', 'pairToken', 'VerificationToken_pairToken_key')
+  await dropColumnAndIndex('VerificationToken', 'paired', null)
 
   // Comment.authorId index (for /u/[username] listing)
   await addIndexIfMissing('Comment_authorId_idx', 'Comment', ['authorId'])
@@ -228,30 +243,34 @@ async function main() {
   await addColumnIfMissing('Post', 'accessTier', "TEXT NOT NULL DEFAULT 'free'")
   await addColumnIfMissing('Post', 'priceCents', 'INTEGER')
 
-  // Step 4: bootstrap the existing creator admin with an email so they can
-  // receive magic links. Only runs if the user exists and currently has no
-  // email — never overwrites a known one.
-  const creatorEmail = process.env.CREATOR_EMAIL
-  if (creatorEmail) {
-    const creator = await prisma.user.findFirst({ where: { username: 'creator' } })
-    if (creator && !creator.email) {
+  // Step 4: admin identity fix-up.
+  //
+  // Previously CREATOR_EMAIL was set so the creator could receive magic
+  // links via /login. After dropping magic-link for everyone, the creator
+  // must NOT have an email (otherwise a stranger could log in to that
+  // account as a "regular" user — the email flow auto-creates a user,
+  // so the existing creator row would be reused and become logged-in).
+  // Admin now logs in at /admin/login with username + password (set via
+  // scripts/set-admin-password.js).
+  //
+  // We always backfill onboarded + name so creator doesn't get bounced
+  // through /onboarding on their next admin login.
+  const creator = await prisma.user.findFirst({ where: { username: 'creator' } })
+  if (creator) {
+    if (creator.email) {
       await prisma.user.update({
         where: { id: creator.id },
-        data: { email: creatorEmail },
+        data: { email: null },
       })
-      console.log('[migrate] creator.email =', creatorEmail)
+      console.log('[migrate] creator.email cleared (admin now logs in via /admin/login)')
     }
-    // Mark creator as onboarded (they already have a username) and backfill
-    // their display name from username if not already set.
-    if (creator) {
-      await prisma.user.update({
-        where: { id: creator.id },
-        data: {
-          onboarded: true,
-          name: creator.name ?? creator.username,
-        },
-      })
-    }
+    await prisma.user.update({
+      where: { id: creator.id },
+      data: {
+        onboarded: true,
+        name: creator.name ?? creator.username,
+      },
+    })
   }
 
   console.log('[migrate] schema sync complete')

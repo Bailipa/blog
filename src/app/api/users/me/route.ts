@@ -1,7 +1,7 @@
-// Returns the current session's user. Used by /post-verify and /onboarding
-// to decide where to bounce a freshly-logged-in user. Reads the same JWT
-// session that /api/auth/[...nextauth] uses, so there's no extra DB hit
-// when the session is fresh.
+// Returns the current session's user. Used by /onboarding and various
+// client components (Header avatar dropdown, Comments editor) to read
+// fresh DB state instead of trusting the JWT (which can lag after a
+// profile edit).
 
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'

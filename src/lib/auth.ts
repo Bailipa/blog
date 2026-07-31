@@ -18,83 +18,32 @@ declare module 'next-auth' {
   }
 }
 
-const allowPasswordLogin = process.env.ALLOW_PASSWORD_LOGIN === 'true'
-
+// Admin logs in with username + password at /admin/login. Visitors use
+// the OTP flow at /login (handled by /api/auth/public/verify-code which
+// directly issues a session JWT — no NextAuth signIn for visitors).
+//
+// Magic-link providers were removed because the visitor flow no longer
+// sends a clickable link in email (OTP-only) and admins don't need
+// email-based login.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
-      id: 'magic-link',
-      name: 'magic-link',
+      id: 'credentials',
+      name: 'credentials',
       credentials: {
-        token: { label: 'token', type: 'text' },
+        username: { label: '用户名', type: 'text' },
+        password: { label: '密码', type: 'password' },
       },
       authorize: async (credentials) => {
-        const token = credentials?.token
-        if (typeof token !== 'string' || !token) return null
-        const { consumeMagicToken } = await import('./magic-link')
-        const result = await consumeMagicToken(token)
-        if (!result.ok) return null
+        if (!credentials?.username || !credentials?.password) return null
+        const { compare } = await import('bcryptjs')
         const prisma = (await import('./prisma')).default
-        const user = await prisma.user.findUnique({ where: { email: result.identifier } })
-        if (!user || user.deletedAt) return null
-        return {
-          id: user.id,
-          name: user.name ?? user.username,
-          username: user.username,
-          email: user.email ?? undefined,
-          isAdmin: user.isAdmin,
-        }
-      },
-    }),
-    ...(allowPasswordLogin
-      ? [
-          Credentials({
-            id: 'credentials',
-            name: 'credentials',
-            credentials: {
-              username: { label: '用户名', type: 'text' },
-              password: { label: '密码', type: 'password' },
-            },
-            authorize: async (credentials) => {
-              if (!credentials?.username || !credentials?.password) return null
-              const { compare } = await import('bcryptjs')
-              const prisma = (await import('./prisma')).default
-              const user = await prisma.user.findUnique({
-                where: { username: credentials.username as string },
-              })
-              if (!user || !user.password || user.deletedAt) return null
-              const valid = await compare(credentials.password as string, user.password)
-              if (!valid) return null
-              return {
-                id: user.id,
-                name: user.name ?? user.username,
-                username: user.username,
-                email: user.email ?? undefined,
-                isAdmin: user.isAdmin,
-              }
-            },
-          }),
-        ]
-      : []),
-    // P5: 6-digit OTP code fallback. authorize looks up the row by
-    // (identifier, code) and consumes it single-use.
-    Credentials({
-      id: 'magic-code',
-      name: 'magic-code',
-      credentials: {
-        email: { label: 'email', type: 'text' },
-        code: { label: 'code', type: 'text' },
-      },
-      authorize: async (credentials) => {
-        const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : ''
-        const code = typeof credentials?.code === 'string' ? credentials.code.trim() : ''
-        if (!email || !code) return null
-        const { consumeMagicCode } = await import('./magic-link')
-        const result = await consumeMagicCode(email, code)
-        if (!result.ok) return null
-        const prisma = (await import('./prisma')).default
-        const user = await prisma.user.findUnique({ where: { email: result.identifier } })
-        if (!user || user.deletedAt) return null
+        const user = await prisma.user.findUnique({
+          where: { username: credentials.username as string },
+        })
+        if (!user || !user.password || user.deletedAt) return null
+        const valid = await compare(credentials.password as string, user.password)
+        if (!valid) return null
         return {
           id: user.id,
           name: user.name ?? user.username,

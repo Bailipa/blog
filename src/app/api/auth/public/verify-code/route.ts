@@ -1,14 +1,10 @@
 // POST /api/auth/public/verify-code
 //
-// OTP fallback for users whose email link opens in an in-app browser
-// (QQ Mail / Gmail / WeChat). User reads the 6-digit code from the email,
-// pastes it into /login, this endpoint validates and signs them in.
-//
-// Implementation note: instead of calling signIn() from this route handler
-// (which is fragile — NextAuth's NEXT_REDIRECT throw is not always
-// handled cleanly outside of server actions), we directly generate the
-// session JWT and set it as a cookie, identical to how /api/auth/pair-status
-// works. The /login page then transitions to LoginSuccess.
+// OTP verify. Browser POSTs the 6-digit code the user received in email;
+// this endpoint validates the code, marks the row consumed, and issues a
+// session JWT directly (rather than calling signIn() from a route handler,
+// which is fragile — NextAuth's NEXT_REDIRECT throw isn't always handled
+// cleanly outside server actions).
 //
 // Body: { email, code, callbackUrl? }
 
@@ -73,9 +69,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '账号不可用' }, { status: 403 })
     }
 
-    // Generate session JWT directly (same approach as pair-status).
-    // This avoids the signIn() / NEXT_REDIRECT throw dance that's brittle
-    // inside route handlers.
+    // Generate session JWT directly. This avoids the signIn() /
+    // NEXT_REDIRECT throw dance that's brittle inside route handlers.
     const isHttps = req.nextUrl.protocol === 'https:'
     const cookieName = isHttps ? COOKIE_NAME_PROD : COOKIE_NAME_DEV
     const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET

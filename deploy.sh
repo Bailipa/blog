@@ -41,6 +41,11 @@ cp -r .next/standalone/. "$DEPLOY_DIR/"
 cp -r .next/static "$DEPLOY_DIR/.next/static"
 cp -r node_modules/@prisma "$DEPLOY_DIR/node_modules/@prisma"
 cp -r node_modules/.prisma "$DEPLOY_DIR/node_modules/.prisma"
+# bcryptjs is used by /admin/login + /api/admin/password for admin password
+# auth. Next.js standalone doesn't auto-trace dynamic imports of it, so we
+# have to copy it explicitly. Without this, admin login throws
+# "Cannot find package 'bcryptjs'" at runtime (visible as CredentialsSignin).
+cp -r node_modules/bcryptjs "$DEPLOY_DIR/node_modules/bcryptjs"
 cp -r scripts "$DEPLOY_DIR/scripts"
 
 # Copy Prisma generated client + debian engine binary.
@@ -72,20 +77,20 @@ NEXTAUTH_URL="https://blog.dogeggcode.cyou"
 NEXT_PUBLIC_APP_URL="https://blog.dogeggcode.cyou"
 LOG_LEVEL=info
 
-# P3: magic-link auth
-# CREATOR_EMAIL is consumed by scripts/migrate-db.js on first launch to
-# backfill the existing admin user's email column. DirectMail creds are
-# optional — when unset, magic links fall through to a dev log file.
-CREATOR_EMAIL="${CREATOR_EMAIL:-2350344031@qq.com}"
+# OTP email (visitor login). DirectMail creds are optional — when unset,
+# the OTP code falls through to /tmp/otp-debug.log on the server and the
+# /login page shows it inline.
 DIRECT_MAIL_ACCESS_KEY_ID="${DIRECT_MAIL_ACCESS_KEY_ID:-}"
 DIRECT_MAIL_ACCESS_KEY_SECRET="${DIRECT_MAIL_ACCESS_KEY_SECRET:-}"
 DIRECT_MAIL_FROM="${DIRECT_MAIL_FROM:-}"
 DIRECT_MAIL_FROM_NAME="${DIRECT_MAIL_FROM_NAME:-LB Blog}"
 DIRECT_MAIL_REGION="${DIRECT_MAIL_REGION:-cn-hangzhou}"
 
-# Recovery: set to "true" to enable username+password login as a fallback.
-# Default false. The AI client (P4) uses a separate API-token path.
-ALLOW_PASSWORD_LOGIN="${ALLOW_PASSWORD_LOGIN:-false}"
+# Admin login is username + password at /admin/login. Bootstrap by
+# running on the server after first deploy:
+#   cd /www/wwwroot/blog.dogeggcode.cyou/lb-blog
+#   node scripts/set-admin-password.js creator
+# (it prints a one-time random password if you don't pass one as argv).
 ENVEOF
 
 rm -f "$DEPLOY_DIR/tsconfig.json" "$DEPLOY_DIR/tsconfig.tsbuildinfo"
