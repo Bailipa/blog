@@ -21,7 +21,7 @@ interface Props {
 
 export default function ProfileEditPage({ username }: Props) {
   const router = useRouter()
-  const { data: _session, status: sessionStatus } = useSession()
+  const { data: _session, status: sessionStatus, update: updateSession } = useSession()
   const [me, setMe] = useState<MeUser | null>(null)
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
@@ -127,8 +127,14 @@ export default function ProfileEditPage({ username }: Props) {
       // Username might have changed; if so, navigate to the new URL.
       const newUsernameFinal = j.user?.username as string
       if (newUsernameFinal && newUsernameFinal !== username) {
+        // Refresh JWT so Header dropdown / 我的主页 link uses the new
+        // username. update() re-runs the jwt callback with trigger='update'.
+        await updateSession({})
         router.replace(`/u/${newUsernameFinal}/edit?renamed=1`)
       } else {
+        // Even when username didn't change, name / bio / avatar might have.
+        // Refresh JWT so the next render reflects them.
+        await updateSession({})
         setSavedAt(new Date().toLocaleTimeString('zh-CN'))
       }
     } catch (err) {
@@ -151,6 +157,9 @@ export default function ProfileEditPage({ username }: Props) {
         return
       }
       setAvatarUrl(j.avatarUrl)
+      // Refresh JWT so Header avatar reflects the new upload without
+      // waiting for cookie expiry.
+      await updateSession({})
     } finally {
       setUploading(false)
     }
@@ -161,6 +170,7 @@ export default function ProfileEditPage({ username }: Props) {
     try {
       await fetch('/api/users/avatar', { method: 'DELETE' })
       setAvatarUrl(null)
+      await updateSession({})
     } finally {
       setUploading(false)
     }

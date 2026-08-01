@@ -18,7 +18,7 @@ interface MeUser {
 export default function OnboardingPage() {
   const router = useRouter()
   const search = useSearchParams()
-  const { status: sessionStatus } = useSession()
+  const { status: sessionStatus, update: updateSession } = useSession()
   const [me, setMe] = useState<MeUser | null>(null)
   const [username, setUsername] = useState('')
   const [name, setName] = useState('')
@@ -120,6 +120,10 @@ export default function OnboardingPage() {
         setError(j.error ?? '保存失败')
         return
       }
+      // Refresh the JWT so the Header dropdown (and any other useSession()
+      // consumer) sees the new username / name / avatar immediately,
+      // without waiting for the cookie to expire.
+      await updateSession({})
       router.replace(callbackUrl)
     } catch (err) {
       setError(err instanceof Error ? err.message : '网络异常')
@@ -141,6 +145,7 @@ export default function OnboardingPage() {
         return
       }
       setAvatarUrl(j.avatarUrl)
+      await updateSession({})
     } finally {
       setUploading(false)
     }
@@ -151,6 +156,7 @@ export default function OnboardingPage() {
     try {
       await fetch('/api/users/avatar', { method: 'DELETE' })
       setAvatarUrl(null)
+      await updateSession({})
     } finally {
       setUploading(false)
     }
