@@ -149,9 +149,6 @@ function LoginPageInner() {
             {loading ? '发送中…' : '发送验证码'}
           </button>
         </form>
-        <p className="login-footer-hint">
-          管理员请到 <a href="/admin/login" className="login-link-inline">/admin/login</a>
-        </p>
       </div>
     </div>
   )
