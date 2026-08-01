@@ -8,7 +8,6 @@ import AxialDots from './AxialDots'
 export default function CosmicHero() {
   const [heroRightRevealed, setHeroRightRevealed] = React.useState(false)
   const [heroLeftRevealed, setHeroLeftRevealed] = React.useState(false)
-  const [navRevealed, setNavRevealed] = React.useState(false)
 
   React.useEffect(() => {
     const svg = document.querySelector('.qimen-svg')
@@ -55,7 +54,6 @@ export default function CosmicHero() {
 
     const t1 = setTimeout(() => setHeroRightRevealed(true), 100)
     const t2 = setTimeout(() => setHeroLeftRevealed(true), 1500)
-    const t3 = setTimeout(() => setNavRevealed(true), 1900)
 
     // ===== Mouse Parallax =====
     const ringWrappers: SVGGElement[] = []
@@ -131,7 +129,6 @@ export default function CosmicHero() {
       clearTimeout(t0)
       clearTimeout(t1)
       clearTimeout(t2)
-      clearTimeout(t3)
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseleave', onMouseLeave)
       if (rafId) cancelAnimationFrame(rafId)
@@ -140,16 +137,6 @@ export default function CosmicHero() {
 
   return (
     <>
-      <nav className={`nav${navRevealed ? ' revealed' : ''}`}>
-        <div className="nav-logo">Lee's Blog</div>
-        <ul className="nav-links">
-          <li><a href="#">首页</a></li>
-          <li><a href="#posts">博客</a></li>
-          <li><a href="#projects">作品</a></li>
-          <li><a href="#about">关于</a></li>
-        </ul>
-      </nav>
-
       <section className="hero snap-page">
         <div className={`hero-left${heroLeftRevealed ? ' revealed' : ''}`}>
           <div className="hero-tag">探索·创造·分享</div>
