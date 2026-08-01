@@ -50,6 +50,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           username: user.username,
           email: user.email ?? undefined,
           isAdmin: user.isAdmin,
+          // NextAuth maps `user.image` → `token.image` → `session.user.image`,
+          // which is what Header.tsx reads for the avatar. Without this the
+          // JWT would never carry the avatar URL, even on fresh sign-in.
+          image: user.avatarUrl,
         }
       },
     }),
