@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useCallback, useRef, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { LoginSuccess, type LoginSuccessUser } from '@/components/auth/LoginSuccess'
 
 // useSearchParams() forces the route to be dynamic. We also wrap the
@@ -23,6 +24,12 @@ export default function LoginPage() {
 function LoginPageInner() {
   const search = useSearchParams()
   const callbackUrl = search.get('callbackUrl') || '/'
+  // useSession().update() forces the SessionProvider to re-fetch /api/auth/session
+  // so the Header (which uses useSession) sees the new login immediately after
+  // a client-side navigation. Without this, Header stays logged-out until the
+  // user does a full page reload — the cookie is set, but the client-side
+  // SessionProvider doesn't know about it.
+  const { update: refreshSession } = useSession()
 
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
@@ -74,6 +81,12 @@ function LoginPageInner() {
       })
       const j = await r.json().catch(() => ({}))
       if (r.ok && j.ok && j.user?.id) {
+        // Tell the SessionProvider to re-fetch /api/auth/session. Otherwise
+        // after a client-side redirect the Header would still see status
+        // 'unauthenticated' (the cookie is set, but useSession's cached
+        // state is null). This is what was making "click 完善资料" feel
+        // like a logout — the dropdown wasn't there at all.
+        await refreshSession()
         setVerifiedUser({
           username: j.user.username,
           name: j.user.name,
