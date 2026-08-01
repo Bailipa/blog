@@ -69,16 +69,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (u) {
           ;(token as Record<string, unknown>).username = u
         }
+        // Display name (e.g. for Header dropdown); fall back to username.
+        const n = (user as { name?: string | null }).name
+        if (n) {
+          ;(token as Record<string, unknown>).name = n
+        }
+        // Avatar URL (so Header can show uploaded avatar without a
+        // /api/users/me round-trip).
+        const a = (user as { image?: string | null }).image
+        if (a) {
+          ;(token as Record<string, unknown>).avatarUrl = a
+        }
       } else if (trigger === 'update' && token.sub) {
         // Caller explicitly asked to refresh via useSession().update({...}).
-        // Used after profile edit so the next render sees the new username.
+        // Used after profile edit / avatar upload so the next render sees
+        // the new username / name / avatar without waiting for the cookie
+        // to expire.
         const prisma = (await import('./prisma')).default
         const fresh = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { username: true },
+          select: { username: true, name: true, avatarUrl: true },
         })
         if (fresh?.username) {
           ;(token as Record<string, unknown>).username = fresh.username
+        }
+        if (fresh?.name !== undefined) {
+          ;(token as Record<string, unknown>).name = fresh.name
+        }
+        if (fresh?.avatarUrl !== undefined) {
+          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl
         }
       } else if (
         (token as Record<string, unknown>).id &&
@@ -91,10 +110,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const id = (token as Record<string, unknown>).id as string
         const fresh = await prisma.user.findUnique({
           where: { id },
-          select: { username: true },
+          select: { username: true, name: true, avatarUrl: true },
         })
         if (fresh?.username) {
           ;(token as Record<string, unknown>).username = fresh.username
+        }
+        if (fresh?.name) {
+          ;(token as Record<string, unknown>).name = fresh.name
+        }
+        if (fresh?.avatarUrl) {
+          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl
         }
       }
       return token
@@ -104,6 +129,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.isAdmin = (token as Record<string, boolean>).isAdmin
       // null = onboarded false (intentional), undefined shouldn't reach here
       session.user.username = (token as Record<string, string | null | undefined>).username ?? null
+      session.user.name = (token as Record<string, string | null | undefined>).name ?? null
+      session.user.image = (token as Record<string, string | null | undefined>).avatarUrl ?? null
       return session
     },
   },

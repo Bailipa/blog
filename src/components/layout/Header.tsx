@@ -22,9 +22,13 @@ export function Header() {
 
   const isLoggedIn = status === 'authenticated' && session?.user
   const isAdmin = isLoggedIn && session.user.isAdmin
-  const userName = isLoggedIn ? (session.user.name ?? session.user.email ?? '用户') : ''
+  // Display name priority: explicit name → username → email → '用户'.
+  const userName = isLoggedIn
+    ? (session.user.name ?? session.user.username ?? session.user.email ?? '用户')
+    : ''
+  // Avatar priority: uploaded avatar (in JWT) → Gravatar by email → null.
   const userAvatar = isLoggedIn
-    ? resolveAvatarUrl({ avatarUrl: null, email: session.user.email ?? null })
+    ? resolveAvatarUrl({ avatarUrl: session.user.image ?? null, email: session.user.email ?? null })
     : null
 
   return (
