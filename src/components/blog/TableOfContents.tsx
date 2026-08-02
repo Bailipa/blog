@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface TocEntry {
   id: string
@@ -19,6 +19,12 @@ interface TableOfContentsProps {
 export default function TableOfContents({ entries }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Cache of resolved heading DOM elements. Populated lazily inside the
+  // scroll listener (see useEffect below with [] deps), so that even if
+  // the markdown body hasn't hydrated by the time this effect mounts,
+  // we recover automatically on the next scroll event instead of
+  // silently giving up.
+  const headingElsRef = useRef<HTMLElement[]>([])
 
   // Close drawer on Escape
   useEffect(() => {
@@ -40,29 +46,37 @@ export default function TableOfContents({ entries }: TableOfContentsProps) {
     }
   }, [drawerOpen])
 
-  // Scroll-based active heading detection.
+// Scroll-based active heading detection.
   //
   // active = the LAST heading whose top has crossed the nav offset (~80px).
   // This is more reliable than IntersectionObserver for TOC highlighting:
-  //   - No lag from a "trigger zone" — the highlight flips exactly when the
+  //   - No lag from a trigger zone — the highlight flips exactly when the
   //     user scrolls a heading under the fixed nav.
-  //   - No "observed" blind spot when the topmost heading exits a trigger
+  //   - No observed blind spot when the topmost heading exits a trigger
   //     zone (IO callbacks only fire for entries whose state changed).
   //
-  // rAF-throttled so we never run getBoundingClientRect more than once
-  // per frame even if scroll/resize events fire in bursts.
+  // Empty deps [] so the scroll listener is attached exactly once and
+  // never torn down. Heading DOM elements are resolved lazily inside
+  // compute() (and cached on headingElsRef), so even if the markdown
+  // body hasn't hydrated by mount time, the first scroll event
+  // resolves them and activeId starts tracking from then on.
   useEffect(() => {
-    if (entries.length === 0) return
-    const headingEls = entries
-      .map(({ id }) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null)
-    if (headingEls.length === 0) return
-
     const navOffset = 80
     let rafId: number | null = null
 
     const compute = () => {
       rafId = null
+      // Resolve headings lazily; cache on the ref so we only walk
+      // getElementById once. If headings weren't in the DOM at mount
+      // time, this re-attempts every compute call until they appear.
+      let headingEls = headingElsRef.current
+      if (headingEls.length === 0 && entries.length > 0) {
+        headingEls = entries
+          .map(({ id }) => document.getElementById(id))
+          .filter((el): el is HTMLElement => el !== null)
+        headingElsRef.current = headingEls
+      }
+      if (headingEls.length === 0) return
       let active = ''
       // Headings are in document order. As soon as we find one whose top
       // is below the nav offset, every subsequent one is also below it,
@@ -89,6 +103,13 @@ export default function TableOfContents({ entries }: TableOfContentsProps) {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // When the entries prop changes (different article), invalidate the
+  // cached heading elements so the next compute re-resolves.
+  useEffect(() => {
+    headingElsRef.current = []
   }, [entries])
 
   // Sync the TOC's own scroll position so the active item is visible.
