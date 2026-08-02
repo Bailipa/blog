@@ -60,6 +60,9 @@
   --input: rgba(245, 199, 26, 0.2);
   --ring: rgba(245, 199, 26, 0.3);
   --radius: 0.625rem;
+  --nav-height: 60px;
+  --nav-offset: calc(var(--nav-height) + 20px);
+  --toc-fab-size: 48px;
 }
 
 .dark {
@@ -349,18 +352,23 @@ body::before {
 /* ===== Article Page (labuladong-style 3-column) ===== */
 .article-page { min-height: 100vh; padding: 80px 0 60px; }
 .article-layout { max-width: 1400px; margin: 0 auto; padding: 0 8vw;
-  display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; }
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px;
+  align-items: stretch; }
+@media (min-width: 1280px) {
+  .article-layout:has(.article-toc-cell) { grid-template-columns: minmax(0, 1fr) 260px; }
+}
 .article-main { min-width: 0; }
 .article-content-wrap { max-width: 960px; margin: 0 auto; }
-/* Two-layer right TOC: cell is the grid item (default align-self: stretch,
+/* Two-layer right TOC: cell is the grid item (explicit align-self: stretch
    so it spans the full row height = article height), inner is the sticky
-   child with a fixed max-height. The tall cell gives the sticky inner
-   enough "scroll runway" to stay pinned at top: 80px for the entire
-   article, instead of scrolling off the top after a few hundred px. */
-.article-toc-cell { display: block; }
-.article-toc-inner { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; padding: 24px 0; }
-@media (max-width: 1280px) {
-  .article-layout { grid-template-columns: minmax(0, 1fr); }
+   child with no max-height. The tall cell gives the sticky inner enough
+   "scroll runway" to stay pinned at top: var(--nav-offset) for the entire
+   article, instead of scrolling off the top after a few hundred px.
+   Do NOT set max-height or overflow on inner; the .algo-toc-list owns the
+   single scroll. */
+.article-toc-cell { display: block; align-self: stretch; }
+.article-toc-inner { position: sticky; top: var(--nav-offset); padding: 24px 0; }
+@media (max-width: 1279px) {
   .article-toc-cell { display: none; }
 }
 
@@ -404,7 +412,7 @@ body::before {
 .algo-toc { font-size: 0.875rem; }
 .algo-toc-title { font-size: 0.78rem; font-weight: 700; margin: 0 0 12px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
 .algo-toc-panel { position: relative; padding-left: 12px; border-left: 1px solid rgba(var(--glow-rgb),0.1); }
-.algo-toc-list { list-style: none; padding: 0; margin: 0; line-height: 1.6; max-height: min(52vh, calc(100vh - 14rem)); overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(var(--glow-rgb),0.3) transparent; }
+.algo-toc-list { list-style: none; padding: 0; margin: 0; line-height: 1.6; max-height: calc(100vh - var(--nav-offset) - 4rem); overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(var(--glow-rgb),0.3) transparent; }
 .algo-toc-list::-webkit-scrollbar { width: 4px; }
 .algo-toc-list::-webkit-scrollbar-track { background: transparent; }
 .algo-toc-list::-webkit-scrollbar-thumb { background: rgba(var(--glow-rgb),0.2); border-radius: 4px; }
@@ -414,13 +422,52 @@ body::before {
 .algo-toc-link.active { color: var(--gold-bright); background: rgba(var(--glow-rgb),0.08); }
 .toc-level-3 .algo-toc-link { padding-left: 20px; font-size: 0.82rem; }
 
+/* TOC floating action button + drawer (shown <1280px) */
+.toc-fab { display: none; position: fixed; bottom: 24px; right: 24px;
+  width: var(--toc-fab-size); height: var(--toc-fab-size); border-radius: 50%;
+  background: rgba(8, 12, 30, 0.92); border: 1px solid rgba(var(--glow-rgb), 0.3);
+  color: var(--gold-bright); z-index: 50; cursor: pointer;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  align-items: center; justify-content: center;
+  transition: border-color 0.2s, transform 0.2s; }
+.toc-fab:hover { border-color: var(--gold-bright); transform: translateY(-2px); }
+.toc-fab:active { transform: translateY(0); }
+@media (max-width: 1279px) { .toc-fab { display: flex; } }
+
+.toc-drawer-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+  z-index: 90; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  animation: toc-fade-in 0.18s ease-out; }
+.toc-drawer { position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(360px, 88vw); background: var(--bg-deep);
+  border-left: 1px solid rgba(var(--glow-rgb), 0.15); z-index: 100;
+  display: flex; flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+  animation: toc-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+.toc-drawer-header { display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid rgba(var(--glow-rgb), 0.1); flex-shrink: 0; }
+.toc-drawer-header h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+.toc-drawer-close { background: transparent; border: none; color: var(--text-dim);
+  font-size: 1.6rem; line-height: 1; width: 32px; height: 32px; cursor: pointer;
+  border-radius: 6px; transition: background 0.15s, color 0.15s; }
+.toc-drawer-close:hover { background: rgba(var(--glow-rgb), 0.1); color: var(--gold-bright); }
+.toc-drawer-body { flex: 1; overflow-y: auto; padding: 12px 18px; }
+.toc-drawer-body .algo-toc-list { max-height: none; }
+
+@keyframes toc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toc-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .toc-drawer-backdrop, .toc-drawer { animation: none; }
+}
+
 /* ===== Markdown Content (prose-invert overrides) ===== */
 /* Wrapper is <div class="markdown-body prose prose-invert max-w-none">.
    Below: theme-color overrides for the prose defaults, plus the
    scroll-mt-20 we want for anchor links so the fixed nav doesn't
    cover the target heading. */
 .markdown-body { color: var(--text-main); }
-.markdown-body :where(h1, h2, h3, h4) { color: var(--gold-bright); font-weight: 700; scroll-margin-top: 5rem; }
+.markdown-body :where(h1, h2, h3, h4) { color: var(--gold-bright); font-weight: 700; scroll-margin-top: var(--nav-offset); }
 .markdown-body :where(p, li) { color: var(--text-main); line-height: 1.85; }
 .markdown-body p { margin: 0 0 1.2em; }
 .markdown-body h1 { font-size: 1.9rem; margin: 1.6em 0 0.6em; }
@@ -685,7 +732,6 @@ body::before {
   .blog-list-page, .projects-page { padding: 80px 5vw 40px; }
   .article-page { padding: 60px 0 40px; }
   .article-layout { padding: 0 5vw; gap: 24px; }
-  .article-toc-cell { display: none; }
   .article-title-text { font-size: 1.75rem; }
   .about-page { padding: 80px 5vw; }
   .site-footer { padding: 40px 5vw; }

@@ -97,13 +97,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </main>
 
-        {toc.length > 0 && (
-          <aside className="article-toc-cell">
-            <div className="article-toc-inner">
-              <TableOfContents entries={toc} />
-            </div>
-          </aside>
-        )}
+        {toc.length > 0 && <TableOfContents entries={toc} />}
       </div>
     </article>
   )
