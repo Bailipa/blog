@@ -15,7 +15,7 @@ interface TableOfContentsProps {
 // Renders the article TOC in two forms, mutually exclusive via CSS:
 //   - Desktop (>=1280px): sticky right-side aside (.article-toc-cell > .article-toc-inner)
 //   - Tablet/Mobile (<1280px): floating action button + slide-in drawer
-// Both forms share the same IntersectionObserver, activeId, and click behavior.
+// Both forms share the same activeId (driven by scroll position) and click behavior.
 export default function TableOfContents({ entries }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -40,33 +40,71 @@ export default function TableOfContents({ entries }: TableOfContentsProps) {
     }
   }, [drawerOpen])
 
-  // IntersectionObserver: highlight topmost heading in trigger zone.
-  // When no heading is visible AND we're past the last one, clear active
-  // (so the TOC stops highlighting once you scroll into comments/footer).
+  // Scroll-based active heading detection.
+  //
+  // active = the LAST heading whose top has crossed the nav offset (~80px).
+  // This is more reliable than IntersectionObserver for TOC highlighting:
+  //   - No lag from a "trigger zone" — the highlight flips exactly when the
+  //     user scrolls a heading under the fixed nav.
+  //   - No "observed" blind spot when the topmost heading exits a trigger
+  //     zone (IO callbacks only fire for entries whose state changed).
+  //
+  // rAF-throttled so we never run getBoundingClientRect more than once
+  // per frame even if scroll/resize events fire in bursts.
   useEffect(() => {
     if (entries.length === 0) return
-    const observer = new IntersectionObserver(
-      (observed) => {
-        const visible = observed
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible[0]) {
-          setActiveId(visible[0].target.id)
+    const headingEls = entries
+      .map(({ id }) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null)
+    if (headingEls.length === 0) return
+
+    const navOffset = 80
+    let rafId: number | null = null
+
+    const compute = () => {
+      rafId = null
+      let active = ''
+      // Headings are in document order. As soon as we find one whose top
+      // is below the nav offset, every subsequent one is also below it,
+      // so we can stop iterating.
+      for (const el of headingEls) {
+        if (el.getBoundingClientRect().top <= navOffset) {
+          active = el.id
         } else {
-          const lastEl = document.getElementById(entries[entries.length - 1].id)
-          if (lastEl && lastEl.getBoundingClientRect().bottom < 80) {
-            setActiveId('')
-          }
+          break
         }
-      },
-      { rootMargin: '-80px 0px -70% 0px' },
-    )
-    for (const { id } of entries) {
-      const el = document.getElementById(id)
-      if (el) observer.observe(el)
+      }
+      setActiveId(active)
     }
-    return () => observer.disconnect()
+    const schedule = () => {
+      if (rafId !== null) return
+      rafId = requestAnimationFrame(compute)
+    }
+
+    compute()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
   }, [entries])
+
+  // Sync the TOC's own scroll position so the active item is visible.
+  // Both the desktop sidebar list and the mobile drawer body are scrollable,
+  // and we render two copies of every link — so we scrollIntoView on all
+  // matches and let each find its nearest scrollable ancestor.
+  // Deps include drawerOpen so opening the drawer snaps to the active item.
+  useEffect(() => {
+    if (!activeId) return
+    const id = requestAnimationFrame(() => {
+      document
+        .querySelectorAll<HTMLAnchorElement>(`.algo-toc-link[href="#${activeId}"]`)
+        .forEach((link) => link.scrollIntoView({ block: 'nearest' }))
+    })
+    return () => cancelAnimationFrame(id)
+  }, [activeId, drawerOpen])
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     // Let modifier-clicks behave normally (open in new tab, etc.)
