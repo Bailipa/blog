@@ -349,13 +349,19 @@ body::before {
 /* ===== Article Page (labuladong-style 3-column) ===== */
 .article-page { min-height: 100vh; padding: 80px 0 60px; }
 .article-layout { max-width: 1400px; margin: 0 auto; padding: 0 8vw;
-  display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; align-items: start; }
+  display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; }
 .article-main { min-width: 0; }
 .article-content-wrap { max-width: 960px; margin: 0 auto; }
-.article-toc-aside { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow: hidden; }
+/* Two-layer right TOC: cell is the grid item (default align-self: stretch,
+   so it spans the full row height = article height), inner is the sticky
+   child with a fixed max-height. The tall cell gives the sticky inner
+   enough "scroll runway" to stay pinned at top: 80px for the entire
+   article, instead of scrolling off the top after a few hundred px. */
+.article-toc-cell { display: block; }
+.article-toc-inner { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; padding: 24px 0; }
 @media (max-width: 1280px) {
   .article-layout { grid-template-columns: minmax(0, 1fr); }
-  .article-toc-aside { display: none; }
+  .article-toc-cell { display: none; }
 }
 
 /* Breadcrumb */
@@ -679,6 +685,7 @@ body::before {
   .blog-list-page, .projects-page { padding: 80px 5vw 40px; }
   .article-page { padding: 60px 0 40px; }
   .article-layout { padding: 0 5vw; gap: 24px; }
+  .article-toc-cell { display: none; }
   .article-title-text { font-size: 1.75rem; }
   .about-page { padding: 80px 5vw; }
   .site-footer { padding: 40px 5vw; }
