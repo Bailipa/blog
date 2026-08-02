@@ -92,26 +92,60 @@ export default function TableOfContents({ entries }: TableOfContentsProps) {
   }, [entries])
 
   // Sync the TOC's own scroll position so the active item is visible.
-  // Both the desktop sidebar list and the mobile drawer body are scrollable,
-  // and we render two copies of every link — so we scrollIntoView on all
-  // matches and let each find its nearest scrollable ancestor.
-  // Deps include drawerOpen so opening the drawer snaps to the active item.
+  // We manually set scrollTop on the container rather than calling
+  // link.scrollIntoView(), because scrollIntoView's default `container: 'all'`
+  // walks ALL scrollable ancestors (including the main <html> viewport) — see
+  // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView.
+  // For a link inside a sticky parent, that can scroll the viewport backward
+  // to the link's document position, which is exactly the "page snap-back"
+  // bug the user reported.
   useEffect(() => {
     if (!activeId) return
-    const id = requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       document
         .querySelectorAll<HTMLAnchorElement>(`.algo-toc-link[href="#${activeId}"]`)
-        .forEach((link) => link.scrollIntoView({ block: 'nearest' }))
+        .forEach((link) => {
+          const container = link.closest<HTMLElement>('.algo-toc-list, .toc-drawer-body')
+          if (!container) return
+          const linkRect = link.getBoundingClientRect()
+          const containerRect = container.getBoundingClientRect()
+          // Link's offset within the container's scroll content (account for any
+          // existing internal scroll so we read the absolute position).
+          const linkOffsetInContainer =
+            linkRect.top - containerRect.top + container.scrollTop
+          // Center the link within the container's visible area.
+          const target =
+            linkOffsetInContainer -
+            container.clientHeight / 2 +
+            link.offsetHeight / 2
+          container.scrollTop = Math.max(
+            0,
+            Math.min(target, container.scrollHeight - container.clientHeight),
+          )
+        })
     })
-    return () => cancelAnimationFrame(id)
+    return () => cancelAnimationFrame(rafId)
   }, [activeId, drawerOpen])
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     // Let modifier-clicks behave normally (open in new tab, etc.)
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
     e.preventDefault()
+    const heading = document.getElementById(id)
+    if (heading) {
+      // Explicit scrollTo with computed target, mirroring labuladong's pattern.
+      // Same reason as above: don't use scrollIntoView, which can scroll
+      // unintended ancestors.
+      const navOffset = 80
+      const target =
+        window.scrollY + heading.getBoundingClientRect().top - navOffset
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      window.scrollTo({
+        top: Math.max(0, Math.min(target, max)),
+        behavior: 'smooth',
+      })
+    }
     setActiveId(id)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     history.replaceState(null, '', `#${id}`)
     setDrawerOpen(false)
   }
