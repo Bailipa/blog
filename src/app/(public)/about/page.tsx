@@ -37,7 +37,7 @@ export default async function AboutPage() {
   }
 
   return (
-    <section className="snap-page about-page" id="about">
+    <section className="about-page">
       <div className="about-container">
         <div className="about-avatar">
           <div className="about-avatar-ring">

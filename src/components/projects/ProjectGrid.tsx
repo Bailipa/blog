@@ -15,14 +15,9 @@ interface ProjectGridProps {
 export default function ProjectGrid({ projects }: ProjectGridProps) {
   return (
     <div className="projects-grid">
-      <div className="projects-track" id="projectsTrack">
-        {projects.map((project, i) => (
-          <ProjectCard key={project.slug} project={project} index={i} />
-        ))}
-        {projects.map((project, i) => (
-          <ProjectCard key={`clone-${project.slug}`} project={project} index={i} />
-        ))}
-      </div>
+      {projects.map((project, i) => (
+        <ProjectCard key={project.slug} project={project} index={i} />
+      ))}
     </div>
   )
 }

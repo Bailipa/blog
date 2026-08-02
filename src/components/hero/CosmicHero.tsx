@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { HeroRings } from './HeroRings'
 import { TaijiCenter } from './TaijiCenter'
 import AxialDots from './AxialDots'
@@ -137,15 +138,15 @@ export default function CosmicHero() {
 
   return (
     <>
-      <section className="hero snap-page">
+      <section className="hero">
         <div className={`hero-left${heroLeftRevealed ? ' revealed' : ''}`}>
           <div className="hero-tag">探索·创造·分享</div>
           <h1 className="hero-title">辉洋的博客</h1>
           <p className="hero-subtitle">Full-Stack Developer &amp; Creative Technologist</p>
           <p className="hero-desc">从代码到艺术。</p>
           <div className="hero-cta">
-            <a href="#posts" className="cta-primary">浏览文章</a>
-            <a href="#projects" className="cta-secondary">查看作品</a>
+            <Link href="/blog" className="cta-primary">浏览文章</Link>
+            <Link href="/projects" className="cta-secondary">查看作品</Link>
           </div>
         </div>
 

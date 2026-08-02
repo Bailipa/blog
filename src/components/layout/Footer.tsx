@@ -36,7 +36,7 @@ export function Footer({ socialLinks }: FooterProps) {
   }
 
   return (
-    <section className="snap-page ending-page" id="about">
+    <footer className="site-footer">
       <div className="ending-icon">✦</div>
       <h2 className="ending-title">保持联系</h2>
       <p className="ending-sub">关注我的最新动态</p>
@@ -54,6 +54,6 @@ export function Footer({ socialLinks }: FooterProps) {
       </div>
       <button className="ending-back" onClick={scrollToTop}>↑ 回到顶部</button>
       <p className="ending-copyright">&copy; {new Date().getFullYear()} Lee&apos;s Blog</p>
-    </section>
+    </footer>
   )
 }

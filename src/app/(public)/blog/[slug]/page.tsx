@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { markdownToHtml, extractToc, estimateReadTime } from '@/lib/markdown'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import TableOfContents from '@/components/blog/TableOfContents'
 import Comments from '@/components/comments/Comments'
+import { Breadcrumb } from '@/components/blog/Breadcrumb'
+import { PostHeader } from '@/components/blog/PostHeader'
+import { PostNavigation } from '@/components/blog/PostNavigation'
+import { CodeEnhancer } from '@/components/blog/CodeEnhancer'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,43 +48,61 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     ? new Date(post.publishedAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
     : ''
 
-  return (
-    <article className="blog-post-page">
-      <Link href="/" className="blog-post-back">← 返回首页</Link>
-      {post.coverImage && (
-        <img src={post.coverImage} alt={post.title} className="blog-post-cover" loading="lazy" />
-      )}
-      <header className="blog-post-header">
-        <div className="blog-post-meta">
-          {post.category && <span className="post-tag">{post.category.name}</span>}
-          {date && <time>{date}</time>}
-          <span>{readTime} 分钟阅读</span>
-        </div>
-        <h1 className="blog-post-title">{post.title}</h1>
-        {post.excerpt && <p className="blog-post-excerpt">{post.excerpt}</p>}
-        {post.tags.length > 0 && (
-          <div className="post-card-tags">
-            {post.tags.map(({ tag }) => (
-              <span key={tag.name} className="post-card-tag">{tag.name}</span>
-            ))}
-          </div>
-        )}
-      </header>
+  // Sibling posts for prev/next nav (by publishedAt ordering)
+  let prev: { slug: string; title: string } | null = null
+  let next: { slug: string; title: string } | null = null
+  if (post.publishedAt) {
+    const [prevRow, nextRow] = await Promise.all([
+      prisma.post.findFirst({
+        where: { status: 'PUBLISHED', publishedAt: { lt: post.publishedAt } },
+        orderBy: { publishedAt: 'desc' },
+        select: { slug: true, title: true },
+      }),
+      prisma.post.findFirst({
+        where: { status: 'PUBLISHED', publishedAt: { gt: post.publishedAt } },
+        orderBy: { publishedAt: 'asc' },
+        select: { slug: true, title: true },
+      }),
+    ])
+    prev = prevRow
+    next = nextRow
+  }
 
-      <div className="blog-post-layout">
+  return (
+    <article className="article-page">
+      <CodeEnhancer />
+
+      <div className="article-layout">
+        <main className="article-main">
+          <div className="article-content-wrap">
+            <Breadcrumb category={post.category} title={post.title} />
+
+            <PostHeader
+              title={post.title}
+              excerpt={post.excerpt}
+              date={date}
+              readTime={readTime}
+              category={post.category}
+              tags={post.tags}
+              coverImage={post.coverImage}
+            />
+
+            <MarkdownRenderer html={html} />
+
+            <PostNavigation prev={prev} next={next} />
+
+            <footer className="article-comments-wrap">
+              <Comments postSlug={slug} />
+            </footer>
+          </div>
+        </main>
+
         {toc.length > 0 && (
-          <aside className="blog-post-toc">
+          <aside className="article-toc-aside">
             <TableOfContents entries={toc} />
           </aside>
         )}
-        <div className="blog-post-content">
-          <MarkdownRenderer html={html} />
-        </div>
       </div>
-
-      <footer className="blog-post-comments">
-        <Comments postSlug={slug} />
-      </footer>
     </article>
   )
 }
