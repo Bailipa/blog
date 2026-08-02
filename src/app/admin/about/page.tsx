@@ -126,11 +126,13 @@ export default function AdminAboutPage() {
     setSaving(false)
   }
 
-  if (loading) return <div className="admin-page"><p className="admin-loading">加载中...</p></div>
-
   return (
     <div className="admin-page">
       <h1 className="admin-page-title">关于页面设置</h1>
+
+      {loading && (
+        <p className="admin-loading" role="status">加载中...</p>
+      )}
 
       <Card className="admin-form-card">
         <CardContent>
@@ -224,7 +226,7 @@ export default function AdminAboutPage() {
       </Card>
 
       <div style={{ marginTop: 24, display: 'flex', gap: 8 }}>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || loading}>
           {saving ? '保存中...' : '保存'}
         </Button>
       </div>

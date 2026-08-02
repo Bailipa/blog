@@ -61,6 +61,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: async ({ token, user, trigger }) => {
       if (user) {
+        // Fresh sign-in: copy what we know about the user.
+        ;(token as Record<string, unknown>).id = user.id
+        ;(token as Record<string, unknown>).isAdmin = (user as { isAdmin: boolean }).isAdmin
+        // Only set token.username if the user actually has one. Leave it
+        // `undefined` otherwise — that's the signal below to refresh from
+        // the DB on the next session call. We must NOT store `null`
+        // unconditionally, otherwise we can't tell apart "real null, user
+        // never onboarded" from "we never knew".
+        const u = (user as { username?: string | null }).username
+        if (u) {
+          ;(token as Record<string, unknown>).username = u
+        }
+        const n = (user as { name?: string | null }).name
+        if (n) {
+          ;(token as Record<string, unknown>).name = n
+        }
+        const a = (user as { image?: string | null }).image
+        if (a) {
+          ;(token as Record<string, unknown>).avatarUrl = a
+        }
       } else if (trigger === 'update' && (token.sub || token.id)) {
         // Caller explicitly asked to refresh via useSession().update({...}).
         // Used after profile edit / avatar upload so the next render sees
