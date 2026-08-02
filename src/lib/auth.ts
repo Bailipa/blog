@@ -72,14 +72,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: userId },
           select: { username: true, name: true, avatarUrl: true },
         })
-        if (fresh?.username) {
-          ;(token as Record<string, unknown>).username = fresh.username
-        }
-        if (fresh?.name !== undefined) {
-          ;(token as Record<string, unknown>).name = fresh.name
-        }
-        if (fresh?.avatarUrl !== undefined) {
-          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl
+        // Always write the three fields (even when null) so the next
+        // jwt call sees a settled token and short-circuits the DB query.
+        if (fresh) {
+          ;(token as Record<string, unknown>).username = fresh.username ?? null
+          ;(token as Record<string, unknown>).name = fresh.name ?? null
+          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl ?? null
         }
       } else if (
         ((token as Record<string, unknown>).sub || (token as Record<string, unknown>).id) &&
@@ -87,7 +85,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       ) {
         // Stale JWT from a previous deploy that didn't carry username.
         // Refresh once from the DB; subsequent calls will short-circuit
-        // because token.username will be set.
+        // because token.username will be set (possibly to null for a user
+        // who hasn't onboarded yet — null !== undefined, so the guard
+        // above stops firing).
         const prisma = (await import('./prisma')).default
         const id = ((token as Record<string, unknown>).sub ??
           (token as Record<string, unknown>).id) as string
@@ -95,14 +95,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id },
           select: { username: true, name: true, avatarUrl: true },
         })
-        if (fresh?.username) {
-          ;(token as Record<string, unknown>).username = fresh.username
-        }
-        if (fresh?.name) {
-          ;(token as Record<string, unknown>).name = fresh.name
-        }
-        if (fresh?.avatarUrl) {
-          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl
+        if (fresh) {
+          ;(token as Record<string, unknown>).username = fresh.username ?? null
+          ;(token as Record<string, unknown>).name = fresh.name ?? null
+          ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl ?? null
         }
       }
       return token

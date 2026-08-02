@@ -68,9 +68,13 @@ export default function OnboardingPage() {
           setAvatarUrl(u.avatarUrl ?? null)
           // Skip the "you're already onboarded" redirect if we just submitted
           // the form — submit() handles its own navigation so the saved
-          // indicator can render.
+          // indicator can render. If we're somehow past the layout's DB
+          // gate (e.g., a stale tab after the user got their username
+          // elsewhere), send them to the edit page instead of bouncing
+          // back to '/' — that one-frame bounce was the original "can't
+          // enter" symptom.
           if (u.onboarded && !justSubmitted) {
-            router.replace(callbackUrl)
+            router.replace(u.username ? `/u/${u.username}/edit` : callbackUrl)
           }
         }
       })

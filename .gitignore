@@ -62,3 +62,6 @@ lb-blog_deploy_*.tar.gz
 
 # backups (DB snapshots, uploads)
 /backups/
+
+# AI handoff docs (contain infra details: server IP, SSH key paths, prod layout)
+HANDOFF.md

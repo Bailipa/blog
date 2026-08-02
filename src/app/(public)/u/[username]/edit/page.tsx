@@ -27,7 +27,7 @@ export default function ProfileEditPage({
 }) {
   const { username } = use(params)
   const router = useRouter()
-  const { data: _session, status: sessionStatus, update: updateSession } = useSession()
+  const { data: session, status: sessionStatus, update: updateSession } = useSession()
   const [me, setMe] = useState<MeUser | null>(null)
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
@@ -46,9 +46,16 @@ export default function ProfileEditPage({
     /* eslint-disable react-hooks/set-state-in-effect */
     if (sessionStatus === 'unauthenticated') {
       router.replace(`/login?callbackUrl=${encodeURIComponent(`/u/${username}/edit`)}`)
+    } else if (sessionStatus === 'authenticated' && !session?.user?.username) {
+      // Stale JWT: session.user.username is null but the layout just
+      // confirmed via DB that we are the legitimate owner of this
+      // profile. Resync so the Header dropdown (and the in-page
+      // username input prefill) reflect reality. Without this, the
+      // menu still shows "完善资料" until the user actually saves.
+      updateSession({})
     }
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [sessionStatus, router, username])
+  }, [sessionStatus, session, router, username, updateSession])
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
