@@ -70,14 +70,24 @@ export function Header() {
             {open && (
               <div className="nav-user-menu" role="menu">
                 {session.user.username ? (
-                  <Link
-                    href={`/u/${session.user.username}`}
-                    className="nav-user-menu-item"
-                    role="menuitem"
-                    onClick={() => setOpen(false)}
-                  >
-                    我的主页
-                  </Link>
+                  <>
+                    <Link
+                      href={`/u/${session.user.username}`}
+                      className="nav-user-menu-item"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                    >
+                      我的主页
+                    </Link>
+                    <Link
+                      href={`/u/${session.user.username}/edit`}
+                      className="nav-user-menu-item"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                    >
+                      编辑资料
+                    </Link>
+                  </>
                 ) : (
                   <Link
                     href="/onboarding"

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { use, useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
@@ -15,11 +15,17 @@ interface MeUser {
   isAdmin: boolean
 }
 
-interface Props {
-  username: string
-}
-
-export default function ProfileEditPage({ username }: Props) {
+// Next.js 15+ passes params as a Promise. Use `use()` to unwrap it in a
+// client component (it's a stable API, equivalent to await in async server
+// components). The page used to take `{ username }` directly which silently
+// gave it `undefined` — clicking 编辑资料 in the dropdown then redirected
+// to /u/undefined because the page's useEffect ran with username===undefined.
+export default function ProfileEditPage({
+  params,
+}: {
+  params: Promise<{ username: string }>
+}) {
+  const { username } = use(params)
   const router = useRouter()
   const { data: _session, status: sessionStatus, update: updateSession } = useSession()
   const [me, setMe] = useState<MeUser | null>(null)

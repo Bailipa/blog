@@ -61,37 +61,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: async ({ token, user, trigger }) => {
       if (user) {
-        // Fresh sign-in: copy what we know about the user.
-        ;(token as Record<string, unknown>).id = user.id
-        ;(token as Record<string, unknown>).isAdmin = (user as { isAdmin: boolean }).isAdmin
-        // Only set token.username if the user actually has one. Leave it
-        // `undefined` otherwise — that's the signal below to refresh from
-        // the DB on the next session call. We must NOT store `null`
-        // unconditionally, otherwise we can't tell apart "real null, user
-        // never onboarded" from "we never knew".
-        const u = (user as { username?: string | null }).username
-        if (u) {
-          ;(token as Record<string, unknown>).username = u
-        }
-        // Display name (e.g. for Header dropdown); fall back to username.
-        const n = (user as { name?: string | null }).name
-        if (n) {
-          ;(token as Record<string, unknown>).name = n
-        }
-        // Avatar URL (so Header can show uploaded avatar without a
-        // /api/users/me round-trip).
-        const a = (user as { image?: string | null }).image
-        if (a) {
-          ;(token as Record<string, unknown>).avatarUrl = a
-        }
-      } else if (trigger === 'update' && token.sub) {
+      } else if (trigger === 'update' && (token.sub || token.id)) {
         // Caller explicitly asked to refresh via useSession().update({...}).
         // Used after profile edit / avatar upload so the next render sees
         // the new username / name / avatar without waiting for the cookie
         // to expire.
+        const userId = (token.sub ?? token.id) as string
         const prisma = (await import('./prisma')).default
         const fresh = await prisma.user.findUnique({
-          where: { id: token.sub },
+          where: { id: userId },
           select: { username: true, name: true, avatarUrl: true },
         })
         if (fresh?.username) {
@@ -104,14 +82,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ;(token as Record<string, unknown>).avatarUrl = fresh.avatarUrl
         }
       } else if (
-        (token as Record<string, unknown>).id &&
+        ((token as Record<string, unknown>).sub || (token as Record<string, unknown>).id) &&
         (token as Record<string, unknown>).username === undefined
       ) {
         // Stale JWT from a previous deploy that didn't carry username.
         // Refresh once from the DB; subsequent calls will short-circuit
         // because token.username will be set.
         const prisma = (await import('./prisma')).default
-        const id = (token as Record<string, unknown>).id as string
+        const id = ((token as Record<string, unknown>).sub ??
+          (token as Record<string, unknown>).id) as string
         const fresh = await prisma.user.findUnique({
           where: { id },
           select: { username: true, name: true, avatarUrl: true },
@@ -129,7 +108,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token
     },
     session: ({ session, token }) => {
-      session.user.id = (token as Record<string, string>).id
+      // `sub` is NextAuth's standard user-id field. Older cookies (issued
+      // before our refactor) might have `id` instead. Accept either.
+      session.user.id = ((token as Record<string, string>).sub ??
+        (token as Record<string, string>).id) as string
       session.user.isAdmin = (token as Record<string, boolean>).isAdmin
       // null = onboarded false (intentional), undefined shouldn't reach here
       session.user.username = (token as Record<string, string | null | undefined>).username ?? null

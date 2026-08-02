@@ -80,6 +80,11 @@ export async function POST(req: NextRequest) {
     }
     const sessionToken = await encode({
       token: {
+        // `sub` is NextAuth's standard user-id field. Setting it here
+        // (not just `id`) is what makes our jwt callback's trigger==='update'
+        // branch work — the callback needs token.sub to look up the fresh
+        // user record after /api/users/me/onboard.
+        sub: user.id,
         id: user.id,
         name: user.name ?? user.username,
         username: user.username,

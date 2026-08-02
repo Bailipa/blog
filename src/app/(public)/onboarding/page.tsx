@@ -32,6 +32,12 @@ export default function OnboardingPage() {
   >({ kind: 'idle' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [savedAt, setSavedAt] = useState<string | null>(null)
+  // After successful submit, this page should NOT re-redirect to callbackUrl
+  // (the useEffect below already does that when u.onboarded is true). Without
+  // this flag, the user clicks "完成" and gets instantly navigated away — the
+  // brief "已保存" indicator never gets a chance to render.
+  const [justSubmitted, setJustSubmitted] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -60,14 +66,17 @@ export default function OnboardingPage() {
           setName(u.name ?? '')
           setBio(u.bio ?? '')
           setAvatarUrl(u.avatarUrl ?? null)
-          if (u.onboarded) {
+          // Skip the "you're already onboarded" redirect if we just submitted
+          // the form — submit() handles its own navigation so the saved
+          // indicator can render.
+          if (u.onboarded && !justSubmitted) {
             router.replace(callbackUrl)
           }
         }
       })
       .catch(() => {})
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [sessionStatus, callbackUrl, router])
+  }, [sessionStatus, callbackUrl, router, justSubmitted])
 
   // Username availability check (debounced)
   const checkUsername = useCallback(async (raw: string) => {
@@ -124,7 +133,12 @@ export default function OnboardingPage() {
       // consumer) sees the new username / name / avatar immediately,
       // without waiting for the cookie to expire.
       await updateSession({})
-      router.replace(callbackUrl)
+      // Show "已保存" briefly so the user gets feedback — without it, the
+      // immediate router.replace feels like the click did nothing. Setting
+      // justSubmitted also blocks the useEffect's auto-redirect path.
+      setJustSubmitted(true)
+      setSavedAt(new Date().toLocaleTimeString('zh-CN'))
+      setTimeout(() => router.replace(callbackUrl), 900)
     } catch (err) {
       setError(err instanceof Error ? err.message : '网络异常')
     } finally {
@@ -280,6 +294,7 @@ export default function OnboardingPage() {
           </div>
 
           {error && <p className="onboarding-error">{error}</p>}
+          {savedAt && !error && <p className="onboarding-success">已保存 {savedAt}，跳转中…</p>}
 
           <button
             type="submit"
