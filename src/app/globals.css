@@ -352,24 +352,34 @@ body::before {
 /* ===== Article Page (labuladong-style 3-column) ===== */
 .article-page { min-height: 100vh; padding: 80px 0 60px; }
 .article-layout { max-width: 1400px; margin: 0 auto; padding: 0 8vw;
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px;
-  align-items: stretch; }
-@media (min-width: 1280px) {
-  .article-layout:has(.article-toc-cell) { grid-template-columns: minmax(0, 1fr) 260px; }
-}
-.article-main { min-width: 0; }
+  display: flex; gap: 48px; align-items: flex-start; }
+.article-main { flex: 1 1 auto; min-width: 0; }
 .article-content-wrap { max-width: 960px; margin: 0 auto; }
-/* Two-layer right TOC: cell is the grid item (explicit align-self: stretch
-   so it spans the full row height = article height), inner is the sticky
-   child with no max-height. The tall cell gives the sticky inner enough
-   "scroll runway" to stay pinned at top: var(--nav-offset) for the entire
-   article, instead of scrolling off the top after a few hundred px.
-   Do NOT set max-height or overflow on inner; the .algo-toc-list owns the
-   single scroll. */
-.article-toc-cell { display: block; align-self: stretch; }
-.article-toc-inner { position: sticky; top: var(--nav-offset); padding: 24px 0; }
+/* Right TOC: position:fixed so it stays visible at the same viewport
+   position regardless of article scroll. The earlier sticky + cell+inner
+   "runway" pattern was fragile (alignment-self: stretch + two layers,
+   unstick at article end, scrolling back bug) — fixed is simpler and
+   what the user asked for. Article-main gets margin-right on desktop so
+   the fixed TOC never overlaps article content. */
+.article-toc-cell {
+  display: block;
+  position: fixed;
+  top: var(--nav-offset);
+  width: 260px;
+  max-height: calc(100vh - var(--nav-offset) - 4rem);
+  overflow-y: auto;
+  /* Right offset: match article-layout's right padding. At viewports
+     >= 1400px, the layout is centered (max-width: 1400px) so the right
+     padding from the viewport edge includes the centered margin. */
+  right: max(8vw, calc((100vw - 1400px) / 2 + 8vw));
+}
 @media (max-width: 1279px) {
   .article-toc-cell { display: none; }
+}
+@media (min-width: 1280px) {
+  /* Leave room for the fixed TOC (260) + a small gap, so article content
+     never extends under the TOC. */
+  .article-main { margin-right: 260px; }
 }
 
 /* Breadcrumb */

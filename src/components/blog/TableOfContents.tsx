@@ -192,9 +192,7 @@ export default function TableOfContents({ entries }: TableOfContentsProps) {
 
   return (
     <>
-      <aside className="article-toc-cell">
-        <div className="article-toc-inner">{list}</div>
-      </aside>
+      <aside className="article-toc-cell">{list}</aside>
 
       <button
         type="button"
