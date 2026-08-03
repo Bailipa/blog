@@ -16,6 +16,7 @@ export function HomeInteractions({ items }: Props) {
   const [activeSlug, setActiveSlug] = useState<string>('all')
   const [progress, setProgress] = useState(0)
   const [lifted, setLifted] = useState(false)
+  const [visible, setVisible] = useState(false)
   const scheduled = useRef(false)
 
   useEffect(() => {
@@ -49,9 +50,15 @@ export function HomeInteractions({ items }: Props) {
     compute()
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
+
+    const visCheck = () => setVisible(window.scrollY > window.innerHeight * 0.5)
+    visCheck()
+    window.addEventListener('scroll', visCheck, { passive: true })
+
     return () => {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
+      window.removeEventListener('scroll', visCheck)
     }
   }, [items])
 
@@ -70,7 +77,7 @@ export function HomeInteractions({ items }: Props) {
   }
 
   return (
-    <nav className={`category-nav ${lifted ? 'is-lifted' : ''}`} aria-label="分类锚点导航">
+    <nav className={`category-nav ${lifted ? 'is-lifted' : ''} ${visible ? 'is-visible' : ''}`} aria-label="分类锚点导航">
       <div className="category-nav-progress" aria-hidden="true">
         <span className="category-nav-progress-bar" style={{ transform: `scaleX(${progress})` }} />
       </div>

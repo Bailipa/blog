@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { SectionReveal } from '@/components/layout/SectionReveal'
+import { ScrollToTop } from '@/components/layout/ScrollToTop'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   let socialLinks: { label: string; url: string }[] = []
@@ -18,6 +19,7 @@ export default async function PublicLayout({ children }: { children: React.React
   // Session still flows through the root-level <AuthProvider initialSession={...}>.
   return (
     <>
+      <ScrollToTop />
       <SectionReveal />
       <Header />
       {children}
