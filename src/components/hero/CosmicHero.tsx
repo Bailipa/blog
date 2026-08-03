@@ -11,6 +11,7 @@ export default function CosmicHero() {
   const [heroLeftRevealed, setHeroLeftRevealed] = React.useState(false)
 
   React.useEffect(() => {
+    if (window.matchMedia('(hover: none)').matches) return
     const svg = document.querySelector('.qimen-svg')
     if (!svg) return
     const ns = 'http://www.w3.org/2000/svg'

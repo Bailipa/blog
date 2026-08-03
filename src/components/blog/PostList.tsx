@@ -10,10 +10,14 @@ interface Post {
   id: string
   title: string
   slug: string
-  excerpt: string | null
-  publishedAt: Date | null
-  category: { name: string; slug: string } | null
-  tags: { tag: { name: string } }[]
+  excerpt?: string | null
+  publishedAt?: Date | string | null
+  coverImage?: string | null
+  featured?: boolean
+  viewCount?: number
+  readingMinutes?: number
+  category?: { name: string; slug?: string } | null
+  tags?: { tag: { name: string; slug?: string } }[]
 }
 
 export default function BlogList({ posts }: { posts: Post[] }) {
