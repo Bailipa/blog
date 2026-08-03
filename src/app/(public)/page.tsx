@@ -61,8 +61,8 @@ export default async function HomePage() {
   return (
     <>
       <div id="top" />
-      <HomeInteractions items={categoryNavItems} />
       <CosmicHero />
+      <HomeInteractions items={categoryNavItems} />
 
       <GlassPanel intensity="md">
         {categoryGroups.map((g) => (
