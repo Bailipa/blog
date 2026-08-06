@@ -7,7 +7,6 @@ const CY = 450
 
 const GOLD_BRIGHT = '#f5c71a'
 const GOLD_MID = '#d4a017'
-const GOLD_DARK = '#8b6914'
 const TEXT_LIGHT = '#e2e8f0'
 
 const xiantian = [
