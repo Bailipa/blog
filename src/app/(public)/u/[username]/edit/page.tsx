@@ -3,6 +3,7 @@
 import { use, useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { AvatarCropper } from '@/components/profile/AvatarCropper'
 
 interface MeUser {
   id: string
@@ -41,6 +42,8 @@ export default function ProfileEditPage({
   const [error, setError] = useState('')
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  // Selected file awaiting crop confirmation.
+  const [pendingCrop, setPendingCrop] = useState<File | null>(null)
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -157,12 +160,14 @@ export default function ProfileEditPage({
     }
   }
 
-  const uploadAvatar = async (file: File) => {
+  const uploadAvatar = async (blob: Blob) => {
     setUploading(true)
     setError('')
     try {
       const form = new FormData()
-      form.append('file', file)
+      const name = pendingCrop?.name ?? 'avatar.webp'
+      // Normalize to webp for consistency across formats.
+      form.append('file', new File([blob], name, { type: 'image/webp' }))
       const r = await fetch('/api/users/avatar', { method: 'POST', body: form })
       const j = await r.json()
       if (!r.ok) {
@@ -249,17 +254,28 @@ export default function ProfileEditPage({
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/bmp"
                 style={{ display: 'none' }}
                 onChange={(e) => {
                   const f = e.target.files?.[0]
-                  if (f) uploadAvatar(f)
+                  if (f) setPendingCrop(f)
                   e.target.value = ''
                 }}
               />
-              <p className="onboarding-hint">最大 1MB，JPEG / PNG / WebP</p>
+              <p className="onboarding-hint">支持常见图片格式，选择后可调整位置与大小</p>
             </div>
           </div>
+
+          {pendingCrop && (
+            <AvatarCropper
+              file={pendingCrop}
+              onCancel={() => setPendingCrop(null)}
+              onConfirm={(blob) => {
+                setPendingCrop(null)
+                uploadAvatar(blob)
+              }}
+            />
+          )}
 
           <div className="onboarding-field">
             <label htmlFor="username">用户名</label>
