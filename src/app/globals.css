@@ -102,10 +102,6 @@
   ::-webkit-scrollbar-thumb:hover { background: rgba(245, 199, 26, 0.35); }
 }
 
-.hero-spotlight {
-  position: absolute; inset: 0; z-index: 20; pointer-events: none;
-  background: radial-gradient(800px circle at var(--mx,50%) var(--my,50%), rgba(245,199,26,0.18), rgba(245,199,26,0.06) 40%, transparent 65%);
-}
 .page-spotlight {
   position: fixed; inset: 0; z-index: 2; pointer-events: none;
   background: radial-gradient(800px circle at var(--mx,50%) var(--my,50%), rgba(245,199,26,0.15), rgba(245,199,26,0.05) 40%, transparent 65%);
@@ -979,6 +975,7 @@ body::before {
 
   /* Mobile perf: drop all expensive backdrop-filters and the always-on blurred compass */
   .compass-bg { display: none; }
+  .page-spotlight { display: none; }
   .nav, .glass-panel, .post-card, .mumble-card, .project-card,
   .category-nav, .category-nav-scroll {
     backdrop-filter: none !important;
