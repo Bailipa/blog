@@ -211,6 +211,9 @@ body::before {
   animation-play-state: paused;
   will-change: auto;
 }
+/* Also drop the permanent will-change on the fixed full-screen wrapper so
+   the compositor releases the layer once the hero is out of view. */
+.hero.is-idle .hero-right { will-change: auto; }
 
 /* ===== Hero Layout ===== */
 .hero { position: relative; width: 100%; min-height: 100dvh; height: 100dvh; z-index: 1; }

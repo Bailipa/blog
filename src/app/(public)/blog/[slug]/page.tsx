@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
-import { markdownToHtml, extractToc, estimateReadTime } from '@/lib/markdown'
+import { markdownToHtml, extractToc } from '@/lib/markdown'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer'
 import TableOfContents from '@/components/blog/TableOfContents'
 import Comments from '@/components/comments/Comments'
@@ -39,10 +39,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   try {
     html = await markdownToHtml(post.content)
     toc = extractToc(post.content)
-    readTime = estimateReadTime(post.content)
   } catch {
     html = '<p>文章内容解析失败</p>'
   }
+  readTime = post.readingMinutes ?? 0
 
   const date = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })

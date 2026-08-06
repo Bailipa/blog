@@ -30,10 +30,3 @@ export function extractToc(md: string): { id: string; text: string; level: numbe
   }
   return toc
 }
-
-export function estimateReadTime(md: string): number {
-  const text = md.replace(/[#*`\n]/g, ' ').trim()
-  if (!text) return 0
-  const wordCount = text.split(/\s+/).filter(Boolean).length
-  return Math.max(1, Math.ceil(wordCount / 200))
-}
