@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma'
 export const runtime = 'nodejs'
 import { auth } from '@/lib/auth'
 import { apiErrorHandler } from '@/lib/apiErrorHandler'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { resolveSlug } from '@/lib/slug'
 
 export async function GET(
@@ -68,6 +68,7 @@ export async function PUT(
 
     revalidatePath('/')
     revalidatePath('/blog')
+    revalidateTag('markdown', 'days')
     return NextResponse.json({ data: post })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)
@@ -91,6 +92,7 @@ export async function DELETE(
     revalidatePath('/')
     revalidatePath('/blog')
     if (post?.slug) revalidatePath(`/blog/${post.slug}`)
+    revalidateTag('markdown', 'days')
     return NextResponse.json({ data: { id } })
   } catch (err) {
     const { status, body } = apiErrorHandler(err)

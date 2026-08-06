@@ -5,6 +5,7 @@ import rehypeHighlight from 'rehype-highlight'
 import rehypeStringify from 'rehype-stringify'
 import rehypeSlug from 'rehype-slug'
 import GithubSlugger from 'github-slugger'
+import { unstable_cache } from 'next/cache'
 
 export async function markdownToHtml(md: string): Promise<string> {
   const result = await remark()
@@ -16,6 +17,15 @@ export async function markdownToHtml(md: string): Promise<string> {
     .process(md)
   return result.toString()
 }
+
+// markdownToHtml is CPU-heavy (remark/rehype + lowlight highlight). Cache the
+// result keyed by the markdown itself; the tag lets admin saves invalidate it
+// via revalidateTag('markdown') (see /api/posts & /api/posts/[id]).
+export const getPostHtml = unstable_cache(
+  async (md: string) => markdownToHtml(md),
+  ['post-html'],
+  { tags: ['markdown'], revalidate: 86400 },
+)
 
 export function extractToc(md: string): { id: string; text: string; level: number }[] {
   const toc: { id: string; text: string; level: number }[] = []

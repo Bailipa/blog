@@ -313,7 +313,7 @@ body::before {
     rgba(10, 8, 6, 0.7);
   border-top: 1px solid rgba(245, 199, 26, 0.15);
 }
-.posts-section, .mumbles-section, .projects-section { position: relative; padding: 80px 8vw 60px; max-width: 1400px; margin: 0 auto; }
+.posts-section, .mumbles-section, .projects-section { position: relative; padding: 80px 8vw 60px; max-width: 1400px; margin: 0 auto; content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .section-header { margin-bottom: 32px; }
 .section-sub { color: var(--text-dim); font-size: 0.88rem; margin: 8px 0 0; letter-spacing: 0.04em; }
 
@@ -554,6 +554,15 @@ body::before {
 
 /* ===== Article Page (labuladong-style 3-column) ===== */
 .article-page { min-height: 100vh; padding: 80px 0 60px; }
+/* Scroll progress bar pinned to the top of the viewport, above the nav. */
+.reading-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-bright));
+  box-shadow: 0 0 8px rgba(var(--glow-rgb), 0.4);
+  z-index: 200;
+  pointer-events: none;
+}
 .article-layout { max-width: 1400px; margin: 0 auto; padding: 0 8vw;
   display: flex; gap: 48px; align-items: flex-start; }
 .article-main { flex: 1 1 auto; min-width: 0; }
@@ -604,6 +613,10 @@ body::before {
 .post-excerpt-text { font-size: 1.05rem; color: var(--text-dim); line-height: 1.7; margin: 0; }
 .post-tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .post-tag-chip { font-size: 0.72rem; padding: 3px 10px; border-radius: 6px; background: rgba(var(--glow-rgb),0.06); color: var(--text-dim); border: 1px solid rgba(var(--glow-rgb),0.08); }
+.share-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+.share-btn { display: inline-flex; align-items: center; justify-content: center; padding: 7px 14px; border-radius: 999px; font-size: 0.78rem; text-decoration: none; cursor: pointer; border: 1px solid rgba(var(--glow-rgb),0.15); background: rgba(var(--glow-rgb),0.04); color: var(--text-dim); transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.share-btn:hover { border-color: rgba(var(--glow-rgb),0.4); color: var(--gold-bright); background: rgba(var(--glow-rgb),0.08); }
+.share-btn-copy { color: var(--gold-bright); }
 
 /* Prev/Next nav (labuladong grid-cols-2) */
 .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 56px; padding-top: 32px; border-top: 1px solid rgba(var(--glow-rgb),0.1); }
@@ -617,6 +630,16 @@ body::before {
   .post-nav { grid-template-columns: 1fr; }
   .post-nav-next { text-align: left; }
 }
+
+/* Related posts */
+.related-posts { margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(var(--glow-rgb),0.1); }
+.related-posts-title { font-size: 1rem; font-weight: 700; color: var(--gold-bright); margin-bottom: 16px; letter-spacing: 0.03em; }
+.related-posts-list { list-style: none; display: grid; gap: 10px; }
+.related-post-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(var(--glow-rgb),0.1); text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+.related-post-link:hover { border-color: rgba(var(--glow-rgb),0.3); background: rgba(var(--glow-rgb),0.04); }
+.related-post-title { font-size: 0.92rem; color: var(--text-main); line-height: 1.45; }
+.related-post-link:hover .related-post-title { color: var(--gold-bright); }
+.related-post-meta { flex-shrink: 0; font-size: 0.75rem; color: var(--text-dim); }
 
 /* Comments */
 .article-comments-wrap { margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(var(--glow-rgb),0.1); }
@@ -953,7 +976,8 @@ body::before {
 
   /* Mobile perf: drop all expensive backdrop-filters and the always-on blurred compass */
   .compass-bg { display: none; }
-  .nav, .glass-panel, .post-card, .mumble-card, .project-card {
+  .nav, .glass-panel, .post-card, .mumble-card, .project-card,
+  .category-nav, .category-nav-scroll {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
@@ -1302,6 +1326,11 @@ body::before {
   padding: 64px 8vw 48px;
   max-width: 1400px; margin: 0 auto;
   scroll-margin-top: calc(var(--nav-height) + 60px);
+  /* Skip rendering off-screen sections — long homepage lists 7 sections
+     + 60 cards; only the visible one pays paint/layout cost. The intrinsic
+     size hint keeps scrollbar/scroll metrics stable while skipped. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
 }
 .category-section-header {
   display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
