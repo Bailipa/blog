@@ -280,7 +280,8 @@ body::before {
 /* Mobile menu panel (hidden on lg+) */
 .nav-mobile-menu { display: none; position: absolute; top: 100%; left: 0; right: 0;
   background: #050816ee; backdrop-filter: blur(16px); border-bottom: 1px solid rgba(var(--glow-rgb),0.1);
-  padding: 16px 20px 24px; flex-direction: column; gap: 4px; }
+  padding: 16px 20px 24px; flex-direction: column; gap: 4px;
+  transform-origin: top; animation: fadeSlideUp 0.18s ease-out; }
 .nav-mobile-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .nav-mobile-link { display: flex; align-items: center; padding: 12px 14px; color: var(--text-main); text-decoration: none; border-radius: 8px; font-size: 0.95rem; background: transparent; border: none; cursor: pointer; text-align: left; width: 100%; }
 .nav-mobile-link:hover, .nav-mobile-link.active { background: rgba(var(--glow-rgb),0.08); color: var(--gold-bright); }
@@ -695,6 +696,8 @@ body::before {
 
 @media (prefers-reduced-motion: reduce) {
   .toc-drawer-backdrop, .toc-drawer { animation: none; }
+  .hero-left, .hero-left.revealed { transform: translateY(0); transition: none; }
+  .hero-right, .hero-right.revealed { opacity: 1; transition: none; }
   *,
   *::before,
   *::after {
