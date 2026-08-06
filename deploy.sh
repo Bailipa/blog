@@ -50,7 +50,8 @@ cp -r node_modules/.prisma "$DEPLOY_DIR/node_modules/.prisma"
 # have to copy it explicitly. Without this, admin login throws
 # "Cannot find package 'bcryptjs'" at runtime (visible as CredentialsSignin).
 cp -r node_modules/bcryptjs "$DEPLOY_DIR/node_modules/bcryptjs"
-cp -r scripts "$DEPLOY_DIR/scripts"
+mkdir -p "$DEPLOY_DIR/scripts"
+cp -r scripts/. "$DEPLOY_DIR/scripts"
 
 # Copy Prisma generated client + debian engine binary.
 # Whole directory (not just the .so.node) so scripts like migrate-db.js can
