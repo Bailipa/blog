@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-
 interface SocialLink {
   label: string
   url: string
@@ -49,10 +47,13 @@ export function Footer({ socialLinks }: FooterProps) {
             {link.label}
           </a>
         ))}
-        <Link href="/about" className="social-btn" aria-label="友链">
+        {/* Plain <a> (not next/link) so the footer nav works even before
+            hydration or if client JS ever fails — native navigation is
+            unconditional. */}
+        <a href="/about" className="social-btn" aria-label="友链">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
           友链
-        </Link>
+        </a>
       </div>
       <button className="ending-back" onClick={scrollToTop}>↑ 回到顶部</button>
       <p className="ending-copyright">&copy; {new Date().getFullYear()} Lee&apos;s Blog</p>
