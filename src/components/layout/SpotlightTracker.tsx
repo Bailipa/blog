@@ -7,6 +7,7 @@ export function SpotlightTracker() {
 
   useEffect(() => {
     if (window.matchMedia('(hover: none)').matches) return
+    if (window.matchMedia('(hover: coarse)').matches) return
     let targetX = 50, targetY = 50
     let currentX = 50, currentY = 50
     let isIdle = true
@@ -23,7 +24,7 @@ export function SpotlightTracker() {
       }
     }
 
-    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mousemove', onMouseMove, { passive: true })
 
     const loop = () => {
       frameCount++

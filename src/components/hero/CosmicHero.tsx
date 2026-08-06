@@ -11,10 +11,27 @@ export default function CosmicHero() {
   const [heroLeftRevealed, setHeroLeftRevealed] = React.useState(false)
 
   React.useEffect(() => {
-    if (window.matchMedia('(hover: none)').matches) return
     const svg = document.querySelector('.qimen-svg')
-    if (!svg) return
+    const heroSection = document.querySelector('.hero')
     const ns = 'http://www.w3.org/2000/svg'
+
+    // Pause all SVG CSS animations + the JS parallax loop once the hero
+    // scrolls out of view. `.hero-right` is position:fixed so it stays
+    // painted for the whole page; without this we pay ~14 infinite CSS
+    // animations + SVG filter recomputes every frame, everywhere.
+    const io =
+      heroSection && typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              heroSection.classList.toggle('is-idle', !entries[0]?.isIntersecting)
+            },
+            { threshold: 0.05 },
+          )
+        : null
+    io?.observe(heroSection as Element)
+
+    if (window.matchMedia('(hover: none)').matches) return
+    if (!svg) return
 
     const allRings = Array.from(svg.querySelectorAll('.breathe-1, .breathe-2, .breathe-3, .breathe-4, .breathe-5, .breathe-6, .breathe-7, .taiji-halo'))
     allRings.sort((a, b) => parseFloat(a.getAttribute('r') || '0') - parseFloat(b.getAttribute('r') || '0'))
@@ -82,7 +99,13 @@ export default function CosmicHero() {
     let isIdle = true
     const prevTransforms: string[] = []
 
+    const heroIdle = () =>
+      document.querySelector('.hero')?.classList.contains('is-idle') ?? false
+
     const onMouseMove = (e: MouseEvent) => {
+      // Ignore mousemove while the hero is out of view — the parallax
+      // layer isn't visible, so tracking it is wasted work.
+      if (heroIdle()) return
       const cx = window.innerWidth / 2
       const cy = window.innerHeight / 2
       targetX = (e.clientX - cx) / cx
@@ -103,17 +126,20 @@ export default function CosmicHero() {
     document.addEventListener('mouseleave', onMouseLeave)
 
     const parallaxLoop = () => {
+      if (heroIdle()) {
+        isIdle = true
+        rafId = null
+        return
+      }
       currentX += (targetX - currentX) * 0.06
       currentY += (targetY - currentY) * 0.06
 
-      let changed = false
       ringWrappers.forEach((wr, i) => {
         const strength = 1 - i * 0.1
         const next = `translate(${(currentX * 26 * strength).toFixed(1)}, ${(currentY * 18 * strength).toFixed(1)})`
         if (next !== prevTransforms[i]) {
           wr.setAttribute('transform', next)
           prevTransforms[i] = next
-          changed = true
         }
       })
 
@@ -134,6 +160,7 @@ export default function CosmicHero() {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseleave', onMouseLeave)
       if (rafId) cancelAnimationFrame(rafId)
+      io?.disconnect()
     }
   }, [])
 

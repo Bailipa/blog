@@ -39,6 +39,7 @@ export function HomeInteractions({ items }: Props) {
       const height = doc.scrollHeight - doc.clientHeight
       setProgress(height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0)
       setLifted(scrollTop > 80)
+      setVisible(scrollTop > window.innerHeight * 0.5)
     }
 
     const schedule = () => {
@@ -51,14 +52,9 @@ export function HomeInteractions({ items }: Props) {
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
 
-    const visCheck = () => setVisible(window.scrollY > window.innerHeight * 0.5)
-    visCheck()
-    window.addEventListener('scroll', visCheck, { passive: true })
-
     return () => {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
-      window.removeEventListener('scroll', visCheck)
     }
   }, [items])
 

@@ -2,10 +2,10 @@ import CosmicHero from '@/components/hero/CosmicHero'
 import PostCard, { type PostCardPost } from '@/components/blog/PostCard'
 import ProjectGrid from '@/components/projects/ProjectGrid'
 import { HomeInteractions } from '@/components/layout/HomeInteractions'
+import { SpotlightTracker } from '@/components/layout/SpotlightTracker'
 import { CategorySection } from '@/components/blog/CategorySection'
 import { GlassPanel } from '@/components/ui/GlassPanel'
 import prisma from '@/lib/prisma'
-import { readingMinutes } from '@/lib/readingTime'
 import { groupPostsByCategory } from '@/lib/groups'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +19,7 @@ const POST_SELECT = {
   featured: true,
   viewCount: true,
   publishedAt: true,
-  content: true,
+  readingMinutes: true,
   category: { select: { name: true, slug: true } },
   tags: { select: { tag: { select: { name: true, slug: true } } } },
 } as const
@@ -41,7 +41,7 @@ export default async function HomePage() {
 
   const posts: PostCardPost[] = rawPosts.map((p) => ({
     ...p,
-    readingMinutes: readingMinutes(p.content),
+    readingMinutes: p.readingMinutes,
   }))
 
   const mumbles = mumbleData.map((m) => ({
@@ -62,6 +62,8 @@ export default async function HomePage() {
     <>
       <div id="top" />
       <CosmicHero />
+      <SpotlightTracker />
+      <div className="page-spotlight" id="pageSpotlight" />
       <HomeInteractions items={categoryNavItems} />
 
       <GlassPanel intensity="md">

@@ -2,8 +2,8 @@ const CX = 1000
 const CY = 450
 const GOLD = '#f5c71a'
 
-const ringRadii = [320, 280, 245, 215, 190, 160, 135]
-const outerRadii = [340, 355, 370, 385, 400]
+const ringRadii = [320, 245, 190, 135]
+const outerRadii = [340, 370, 400]
 
 export default function CompassBg() {
   return (

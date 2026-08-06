@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from 'next-themes'
 import { JsonLd } from '@/components/seo/JsonLd'
-import { SpotlightTracker } from '@/components/layout/SpotlightTracker'
 import CompassBg from '@/components/hero/CompassBg'
 import { AuthProvider } from '@/components/AuthProvider'
 import { auth } from '@/lib/auth'
@@ -35,8 +34,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="zh-CN" className="antialiased" suppressHydrationWarning>
       <body>
         <CompassBg />
-        <SpotlightTracker />
-        <div className="page-spotlight" id="pageSpotlight" />
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
           <AuthProvider initialSession={session}>
             {children}
