@@ -240,7 +240,7 @@ body::before {
 
 .hero-right { position: fixed; inset: 0; width: 100vw; height: 100dvh;
   display: flex; align-items: center; justify-content: center; z-index: 0;
-  opacity: 0; transition: opacity 1.2s ease-out; touch-action: none;
+  opacity: 0; transition: opacity 1.2s ease-out;
   transform: perspective(1000px) rotateY(-28deg) rotateX(-22deg);
   will-change: transform; pointer-events: none; }
 .hero-right.revealed { opacity: 1; }

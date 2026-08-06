@@ -1,9 +1,4 @@
 const emojiList = ['📚', '🎮', '📊', '🔧', '🚀', '🎨', '⚡', '🛠️', '📡', '🧩']
-const techIcons: Record<string, string> = {
-  nextjs: '▼', prisma: '▣', postgresql: '▤', openai: '✦', docker: '▥',
-  react: '◈', canvas: '▣', webworkers: '▤', gifjs: '▥',
-  websocket: '◈', d3js: '▣', redis: '▤',
-}
 
 function getEmoji(name: string, index: number): string {
   return emojiList[index % emojiList.length]
