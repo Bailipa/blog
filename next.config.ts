@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
+      {
+        // Hashed build assets are immutable — cache for a year. Without this,
+        // standalone serves them with max-age=60 and repeat visits re-fetch
+        // every chunk.
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
     ]
   },
 }
