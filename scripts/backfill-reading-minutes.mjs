@@ -7,7 +7,8 @@
 //   node scripts/backfill-reading-minutes.mjs
 //
 // Idempotent: recomputes every row every time, safe to re-run.
-// Algorithm mirrors src/lib/readingTime.ts (keep in sync).
+// Algorithm is self-contained here (the old src/lib/readingTime.ts was
+// removed once the value moved into the DB).
 import { PrismaClient } from '../src/generated/prisma/client.js'
 
 const prisma = new PrismaClient()
