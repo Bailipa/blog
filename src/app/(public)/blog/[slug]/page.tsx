@@ -9,17 +9,33 @@ import { Breadcrumb } from '@/components/blog/Breadcrumb'
 import { PostHeader } from '@/components/blog/PostHeader'
 import { PostNavigation } from '@/components/blog/PostNavigation'
 import { CodeEnhancer } from '@/components/blog/CodeEnhancer'
+import { ViewCounter } from '@/components/blog/ViewCounter'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const post = await prisma.post.findUnique({ where: { slug }, select: { title: true, excerpt: true } })
+  const post = await prisma.post.findUnique({
+    where: { slug },
+    select: { title: true, excerpt: true, coverImage: true, publishedAt: true },
+  })
   if (!post) return {}
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const canonical = `${baseUrl}/blog/${slug}`
   return {
     title: post.title,
     description: post.excerpt || undefined,
-    openGraph: { title: post.title, description: post.excerpt || undefined, type: 'article' },
+    alternates: { canonical },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt || undefined,
+      type: 'article',
+      url: canonical,
+      publishedTime: post.publishedAt?.toISOString(),
+      images: post.coverImage
+        ? [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }]
+        : undefined,
+    },
   }
 }
 
@@ -71,6 +87,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <article className="article-page">
       <CodeEnhancer />
+      <ViewCounter slug={slug} />
 
       <div className="article-layout">
         <main className="article-main">

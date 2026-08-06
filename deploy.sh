@@ -29,6 +29,10 @@ npx prisma db push --skip-generate
 
 echo ""
 echo "[3/4] Building..."
+# NEXT_PUBLIC_* vars are inlined at build time. Force the public app URL so
+# canonical / og:url / OG image metadata point at the real site instead of
+# whatever localhost value is in .env during the local build.
+export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://blog.dogeggcode.cyou}"
 npm run build
 
 echo ""
