@@ -55,6 +55,7 @@ model Post {
   status      String     @default("DRAFT")
   featured    Boolean    @default(false)
   viewCount   Int        @default(0)
+  readingMinutes Int    @default(1)
   publishedAt DateTime?
 
   // P5+: paywall foundation (no UI yet)

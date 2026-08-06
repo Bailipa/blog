@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
-import { readingMinutes } from '@/lib/readingTime'
 import { groupPostsByYearMonth, formatYearMonth } from '@/lib/groups'
 import PostCard, { type PostCardPost } from '@/components/blog/PostCard'
 import { ArchiveTimeline } from '@/components/blog/ArchiveTimeline'
@@ -16,7 +15,7 @@ const POST_SELECT = {
   featured: true,
   viewCount: true,
   publishedAt: true,
-  content: true,
+  readingMinutes: true,
   category: { select: { name: true, slug: true } },
   tags: { select: { tag: { select: { name: true, slug: true } } } },
 } as const
@@ -35,7 +34,7 @@ export default async function ArchivePage() {
 
   const posts: PostCardPost[] = rawPosts.map((p) => ({
     ...p,
-    readingMinutes: readingMinutes(p.content),
+    readingMinutes: p.readingMinutes,
   }))
   const yearGroups = groupPostsByYearMonth(posts)
   const totalYears = yearGroups.length

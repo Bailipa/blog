@@ -7,7 +7,6 @@ import { PostListItem } from '@/components/blog/PostListItem'
 import { PostTimelineItem } from '@/components/blog/PostTimelineItem'
 import { BlogFilterBar } from '@/components/blog/BlogFilterBar'
 import { TagCloudSidebar } from '@/components/blog/TagCloudSidebar'
-import { readingMinutes } from '@/lib/readingTime'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +21,7 @@ const POST_SELECT = {
   featured: true,
   viewCount: true,
   publishedAt: true,
-  content: true,
+  readingMinutes: true,
   category: { select: { name: true, slug: true } },
   tags: { select: { tag: { select: { name: true, slug: true } } } },
 } as const
@@ -87,43 +86,48 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   const isDefaultFilter = sort === 'newest' && !categorySlug && period === 'all' && !q
 
-  const [rawPosts, total, heroRow, allCategories, allTags] = await Promise.all([
-    prisma.post.findMany({
-      where,
-      orderBy: orderByFor(sort),
-      skip,
-      take: PAGE_SIZE,
-      select: POST_SELECT,
-    }),
-    prisma.post.count({ where }),
-    isDefaultFilter && currentPage === 1
-      ? prisma.post.findFirst({
-          where: { status: 'PUBLISHED', featured: true },
-          orderBy: { publishedAt: 'desc' },
-          select: POST_SELECT,
-        })
-      : Promise.resolve(null),
-    prisma.category.findMany({
-      orderBy: { sortOrder: 'asc' },
-      include: {
-        _count: { select: { posts: { where: { status: 'PUBLISHED' } } } },
-      },
-    }),
-    prisma.tag.findMany({
-      where: { posts: { some: { post: { status: 'PUBLISHED' } } } },
-      include: {
-        _count: { select: { posts: { where: { post: { status: 'PUBLISHED' } } } } },
-      },
-    }),
-  ])
+  const [rawPosts, total, heroRow, allCategories, allTags, totalTagCount, totalPostsAll] =
+    await Promise.all([
+      prisma.post.findMany({
+        where,
+        orderBy: orderByFor(sort),
+        skip,
+        take: PAGE_SIZE,
+        select: POST_SELECT,
+      }),
+      prisma.post.count({ where }),
+      isDefaultFilter && currentPage === 1
+        ? prisma.post.findFirst({
+            where: { status: 'PUBLISHED', featured: true },
+            orderBy: { publishedAt: 'desc' },
+            select: POST_SELECT,
+          })
+        : Promise.resolve(null),
+      prisma.category.findMany({
+        orderBy: { sortOrder: 'asc' },
+        include: {
+          _count: { select: { posts: { where: { status: 'PUBLISHED' } } } },
+        },
+      }),
+      prisma.tag.findMany({
+        where: { posts: { some: { post: { status: 'PUBLISHED' } } } },
+        include: {
+          _count: { select: { posts: { where: { post: { status: 'PUBLISHED' } } } } },
+        },
+      }),
+      prisma.tag.count({
+        where: { posts: { some: { post: { status: 'PUBLISHED' } } } },
+      }),
+      prisma.post.count({ where: { status: 'PUBLISHED' } }),
+    ])
 
   const posts: PostCardPost[] = rawPosts.map((p) => ({
     ...p,
-    readingMinutes: readingMinutes(p.content),
+    readingMinutes: p.readingMinutes,
   }))
 
   const heroPost = heroRow
-    ? { ...heroRow, readingMinutes: readingMinutes(heroRow.content) }
+    ? { ...heroRow, readingMinutes: heroRow.readingMinutes }
     : null
   const heroId = heroPost?.id
   const listPosts = heroId ? posts.filter((p) => p.id !== heroId) : posts
@@ -132,15 +136,11 @@ export default async function BlogPage({ searchParams }: PageProps) {
     .filter((c) => c._count.posts > 0)
     .map((c) => ({ slug: c.slug, name: c.name, count: c._count.posts }))
 
-  const totalTagCount = await prisma.tag.count({
-    where: { posts: { some: { post: { status: 'PUBLISHED' } } } },
-  })
   const tagItems = allTags.map((t) => ({
     name: t.name,
     slug: t.slug,
     count: t._count.posts,
   }))
-  const totalPostsAll = await prisma.post.count({ where: { status: 'PUBLISHED' } })
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 

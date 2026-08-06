@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
-import { readingMinutes } from '@/lib/readingTime'
 import PostCard, { type PostCardPost } from '@/components/blog/PostCard'
 import { FeaturedHero } from '@/components/blog/FeaturedHero'
 import { splitFeaturedFirst } from '@/lib/groups'
@@ -17,7 +16,7 @@ const POST_SELECT = {
   featured: true,
   viewCount: true,
   publishedAt: true,
-  content: true,
+  readingMinutes: true,
   category: { select: { name: true, slug: true } },
   tags: { select: { tag: { select: { name: true, slug: true } } } },
 } as const
@@ -54,7 +53,7 @@ export default async function TagPage({ params }: PageProps) {
 
   const posts: PostCardPost[] = rawPosts.map((p) => ({
     ...p,
-    readingMinutes: readingMinutes(p.content),
+    readingMinutes: p.readingMinutes,
   }))
 
   const { featured, rest } = splitFeaturedFirst(posts)

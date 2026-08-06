@@ -243,6 +243,10 @@ async function main() {
   await addColumnIfMissing('Post', 'accessTier', "TEXT NOT NULL DEFAULT 'free'")
   await addColumnIfMissing('Post', 'priceCents', 'INTEGER')
 
+  // Post reading-time cache column (P6 perf: avoids shipping full markdown
+  // to the client just to compute reading time)
+  await addColumnIfMissing('Post', 'readingMinutes', 'INTEGER NOT NULL DEFAULT 1')
+
   // Step 4: admin identity fix-up.
   //
   // Previously CREATOR_EMAIL was set so the creator could receive magic
