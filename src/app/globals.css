@@ -1302,9 +1302,10 @@ body::before {
   border: 1px solid transparent; background: transparent;
   text-decoration: none; cursor: pointer;
   white-space: nowrap; flex-shrink: 0;
-  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.2s;
 }
-.category-nav-item:hover { color: var(--gold-bright); background: rgba(var(--glow-rgb), 0.05); }
+/* Only hover gets a transition — the active highlight (scroll-driven,
+   applied via DOM) must snap instantly or it feels laggy while scrolling. */
+.category-nav-item:hover { transition: color 0.2s, background 0.2s, border-color 0.2s; color: var(--gold-bright); background: rgba(var(--glow-rgb), 0.05); }
 .category-nav-item.is-active {
   color: var(--gold-bright);
   background: rgba(var(--glow-rgb), 0.12);
