@@ -132,7 +132,9 @@ body::before {
    almost nothing here but costs O(N²) per card per frame. Only apply it on
    hover (real hover devices), on the single card under the cursor. */
 @media (hover: hover) {
-  .glass-card:hover {
+  .glass-card:hover,
+  .mumble-card:hover,
+  .project-card:hover {
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   }
 }
@@ -541,7 +543,6 @@ body::before {
 .mumble-card { background:
     linear-gradient(145deg, rgba(8,12,30,0.6), rgba(15,12,25,0.5)),
     linear-gradient(135deg, rgba(139,105,20,0.06), rgba(245,199,26,0.02));
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(var(--glow-rgb),0.08); border-radius: 16px; padding: 20px;
   transition: border-color 0.4s, box-shadow 0.4s; }
 .mumble-card:hover { border-color: rgba(var(--glow-rgb),0.2);
@@ -815,7 +816,6 @@ body::before {
 .project-card { border-radius: 20px; overflow: hidden; background:
     linear-gradient(145deg, rgba(8,12,30,0.65), rgba(15,12,25,0.55)),
     linear-gradient(135deg, rgba(139,105,20,0.08), rgba(245,199,26,0.03));
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(var(--glow-rgb),0.1);
   transition: border-color 0.4s, box-shadow 0.4s, transform 0.4s; }
 .project-card:hover { transform: translateY(-4px); border-color: rgba(var(--glow-rgb),0.25);
