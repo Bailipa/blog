@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface CategoryNavItem {
   slug: string
@@ -12,34 +12,59 @@ interface Props {
   items: CategoryNavItem[]
 }
 
+// All scroll-driven state (active item, progress bar, lifted/visible
+// classes) is applied directly to the DOM via refs. React renders the nav
+// once; scrolling never triggers a re-render or reconciliation of the 8
+// category links — the "slow refresh / laggy highlight" the user reported
+// was React re-rendering the whole nav on every scroll event.
 export function HomeInteractions({ items }: Props) {
-  const [activeSlug, setActiveSlug] = useState<string>('all')
-  const [progress, setProgress] = useState(0)
-  const [lifted, setLifted] = useState(false)
-  const [visible, setVisible] = useState(false)
+  const navRef = useRef<HTMLElement>(null)
+  const barRef = useRef<HTMLSpanElement>(null)
   const scheduled = useRef(false)
+  const total = items.reduce((s, i) => s + i.count, 0)
 
   useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
     const sections = items
       .map((it) => ({ slug: it.slug, el: document.getElementById(`section-${it.slug}`) }))
       .filter((x): x is { slug: string; el: HTMLElement } => Boolean(x.el))
+    const links = Array.from(
+      nav.querySelectorAll<HTMLAnchorElement>('.category-nav-item'),
+    )
+    const linkBySlug = new Map<string, HTMLAnchorElement>()
+    links.forEach((link) => {
+      const href = link.getAttribute('href') ?? ''
+      const slug = href === '#top' ? 'all' : href.slice(1)
+      linkBySlug.set(slug, link)
+    })
 
     const compute = () => {
       scheduled.current = false
       const offset = 140
       let active = 'all'
       for (const s of sections) {
-        const top = s.el.getBoundingClientRect().top
-        if (top - offset <= 0) active = s.slug
+        if (s.el.getBoundingClientRect().top - offset <= 0) active = s.slug
       }
-      setActiveSlug(active)
 
+      // Active highlight — pure DOM class toggle, no React.
+      links.forEach((link) =>
+        link.classList.toggle('is-active', linkBySlug.get(active) === link),
+      )
+
+      // Progress bar — set transform directly.
       const doc = document.documentElement
       const scrollTop = window.scrollY
       const height = doc.scrollHeight - doc.clientHeight
-      setProgress(height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0)
-      setLifted(scrollTop > 80)
-      setVisible(scrollTop > window.innerHeight * 0.5)
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${
+          height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0
+        })`
+      }
+
+      // Lifted shadow + visibility — class toggles only.
+      nav.classList.toggle('is-lifted', scrollTop > 80)
+      nav.classList.toggle('is-visible', scrollTop > window.innerHeight * 0.5)
     }
 
     const schedule = () => {
@@ -51,7 +76,6 @@ export function HomeInteractions({ items }: Props) {
     compute()
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
-
     return () => {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
@@ -73,9 +97,13 @@ export function HomeInteractions({ items }: Props) {
   }
 
   return (
-    <nav className={`category-nav ${lifted ? 'is-lifted' : ''} ${visible ? 'is-visible' : ''}`} aria-label="分类锚点导航">
+    <nav
+      ref={navRef}
+      className="category-nav"
+      aria-label="分类锚点导航"
+    >
       <div className="category-nav-progress" aria-hidden="true">
-        <span className="category-nav-progress-bar" style={{ transform: `scaleX(${progress})` }} />
+        <span ref={barRef} className="category-nav-progress-bar" />
       </div>
       <button
         type="button"
@@ -90,17 +118,17 @@ export function HomeInteractions({ items }: Props) {
         <a
           href="#top"
           onClick={(e) => handleAnchor(e, 'all')}
-          className={`category-nav-item ${activeSlug === 'all' ? 'is-active' : ''}`}
+          className="category-nav-item"
         >
           <span className="category-nav-item-name">全部</span>
-          <span className="category-nav-item-count">{items.reduce((s, i) => s + i.count, 0)}</span>
+          <span className="category-nav-item-count">{total}</span>
         </a>
         {items.map((it) => (
           <a
             key={it.slug}
             href={`#${it.slug}`}
             onClick={(e) => handleAnchor(e, it.slug)}
-            className={`category-nav-item ${activeSlug === it.slug ? 'is-active' : ''}`}
+            className="category-nav-item"
           >
             <span className="category-nav-item-name">{it.name}</span>
             <span className="category-nav-item-count">{it.count}</span>
