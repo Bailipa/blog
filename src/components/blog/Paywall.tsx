@@ -62,9 +62,8 @@ export function Paywall({ postSlug, postId, priceCents, mbdProductUrl }: Paywall
         <span className="paywall-badge">付费内容</span>
         <h2 className="paywall-title">这篇文章的剩余内容需要解锁</h2>
         <p className="paywall-desc">
-          {isLoggedIn
-            ? '购买并完成支付后，系统将自动为您解锁全文，无需手动兑换。'
-            : '登录后购买可自动解锁全文；未登录购买请使用兑换码手动兑换。'}
+          购买完成后，在面包多订单里获取兑换码（XXXX-XXXX-XXXX），回到本页输入兑换码即可解锁全文。
+          {!isLoggedIn && ' 兑换前请先登录。'}
         </p>
 
         <div className="paywall-actions">
