@@ -20,6 +20,25 @@ interface SkillGroup {
   items: string[]
 }
 
+interface Experience {
+  role: string
+  org?: string
+  period?: string
+  description?: string
+}
+
+const defaultExperiences: Experience[] = []
+
+const defaultSocialLinks = [
+  { label: 'GitHub', url: 'https://github.com' },
+  { label: 'Email', url: 'mailto:hello@example.com' },
+]
+
+interface SocialLink {
+  label: string
+  url: string
+}
+
 export default async function AboutPage() {
   const configs = await prisma.siteConfig.findMany()
   const configMap: Record<string, string> = {}
@@ -36,6 +55,22 @@ export default async function AboutPage() {
     } catch {}
   }
 
+  let experiences: Experience[] = defaultExperiences
+  if (configMap.about_experiences) {
+    try {
+      const parsed = JSON.parse(configMap.about_experiences)
+      if (Array.isArray(parsed)) experiences = parsed
+    } catch {}
+  }
+
+  let socialLinks: SocialLink[] = defaultSocialLinks
+  if (configMap.social_links) {
+    try {
+      const parsed = JSON.parse(configMap.social_links)
+      if (Array.isArray(parsed)) socialLinks = parsed
+    } catch {}
+  }
+
   return (
     <section className="about-page">
       <div className="about-container">
@@ -49,6 +84,30 @@ export default async function AboutPage() {
         <div className="about-bio">
           <MarkdownRenderer html={contentHtml} />
         </div>
+
+        {experiences.length > 0 && (
+          <div className="about-experiences">
+            <h2 className="about-section-title">经历</h2>
+            <ol className="about-timeline">
+              {experiences.map((exp, i) => (
+                <li key={i} className="about-timeline-item">
+                  <span className="about-timeline-dot" aria-hidden />
+                  <div className="about-timeline-body">
+                    <div className="about-timeline-head">
+                      <h3 className="about-timeline-role">{exp.role}</h3>
+                      {exp.period && <span className="about-timeline-period">{exp.period}</span>}
+                    </div>
+                    {exp.org && <p className="about-timeline-org">{exp.org}</p>}
+                    {exp.description && (
+                      <p className="about-timeline-desc">{exp.description}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
         <div className="about-skills">
           {skills.map((group, i) => (
             <div key={i} className="about-skill-group">
@@ -61,6 +120,25 @@ export default async function AboutPage() {
             </div>
           ))}
         </div>
+
+        {socialLinks.length > 0 && (
+          <div className="about-contact">
+            <h2 className="about-section-title">联系我</h2>
+            <div className="about-contact-links">
+              {socialLinks.map((link, i) => (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="about-contact-link"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <FriendLinks />
     </section>

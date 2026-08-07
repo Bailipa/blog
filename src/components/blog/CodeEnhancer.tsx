@@ -25,6 +25,17 @@ export function CodeEnhancer() {
       pre.parentNode?.insertBefore(wrap, pre)
       wrap.appendChild(pre)
 
+      // Language label from the first code block's class, e.g. language-ts
+      const codeEl = pre.querySelector('code')
+      const langMatch = codeEl?.className?.match(/language-([\w+-]+)/)
+      const lang = langMatch ? langMatch[1] : ''
+      if (lang) {
+        const label = document.createElement('span')
+        label.className = 'code-block-lang'
+        label.textContent = lang
+        wrap.appendChild(label)
+      }
+
       const copyBtn = document.createElement('button')
       copyBtn.type = 'button'
       copyBtn.className = 'code-block-btn code-block-btn-copy'

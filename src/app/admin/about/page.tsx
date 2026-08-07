@@ -17,6 +17,13 @@ interface SocialLink {
   url: string
 }
 
+interface Experience {
+  role: string
+  org?: string
+  period?: string
+  description?: string
+}
+
 const defaultContent = `热爱探索技术与艺术的交汇点。专注于全栈开发、交互设计与创意编程。
 
 相信代码可以是一种表达方式，每一行都是对完美的追求。热衷于开源社区，持续学习中。`
@@ -33,11 +40,14 @@ const defaultSocialLinks: SocialLink[] = [
   { label: 'Email', url: 'mailto:hello@example.com' },
 ]
 
+const defaultExperiences: Experience[] = []
+
 export default function AdminAboutPage() {
   const { show } = useAdminToast()
   const [content, setContent] = useState(defaultContent)
   const [skills, setSkills] = useState<SkillGroup[]>(defaultSkills)
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(defaultSocialLinks)
+  const [experiences, setExperiences] = useState<Experience[]>(defaultExperiences)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -59,6 +69,12 @@ export default function AdminAboutPage() {
           try {
             const parsed = JSON.parse(data.social_links)
             if (Array.isArray(parsed)) setSocialLinks(parsed)
+          } catch {}
+        }
+        if (data.about_experiences) {
+          try {
+            const parsed = JSON.parse(data.about_experiences)
+            if (Array.isArray(parsed)) setExperiences(parsed)
           } catch {}
         }
       } catch {}
@@ -102,6 +118,14 @@ export default function AdminAboutPage() {
     setSocialLinks(next)
   }
 
+  const addExperience = () => setExperiences([...experiences, { role: '', org: '', period: '', description: '' }])
+  const removeExperience = (i: number) => setExperiences(experiences.filter((_, idx) => idx !== i))
+  const updateExperience = (i: number, field: keyof Experience, val: string) => {
+    const next = [...experiences]
+    next[i] = { ...next[i], [field]: val }
+    setExperiences(next)
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -112,6 +136,7 @@ export default function AdminAboutPage() {
           about_content: content,
           about_skills: JSON.stringify(skills),
           social_links: JSON.stringify(socialLinks),
+          about_experiences: JSON.stringify(experiences),
         }),
       })
       if (res.ok) {
@@ -220,6 +245,48 @@ export default function AdminAboutPage() {
               >
                 ×
               </button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="admin-form-card" style={{ marginTop: 24 }}>
+        <CardContent>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 className="admin-section-title">经历时间线</h2>
+            <Button onClick={addExperience} variant="outline" size="sm">+ 添加经历</Button>
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: 12 }}>
+            按时间倒序展示。period 示例：2023 - 至今；org 为机构/公司名；description 可选。
+          </p>
+          {experiences.map((exp, i) => (
+            <div key={i} style={{ marginBottom: 16, padding: 16, border: '1px solid var(--border)', borderRadius: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                <Input
+                  value={exp.role}
+                  onChange={(e) => updateExperience(i, 'role', e.target.value)}
+                  placeholder="职位/角色"
+                  style={{ flex: 1, minWidth: 160 }}
+                />
+                <Input
+                  value={exp.period || ''}
+                  onChange={(e) => updateExperience(i, 'period', e.target.value)}
+                  placeholder="时间（如 2023 - 至今）"
+                  style={{ width: 180 }}
+                />
+                <Button variant="destructive" size="sm" onClick={() => removeExperience(i)}>删除</Button>
+              </div>
+              <Input
+                value={exp.org || ''}
+                onChange={(e) => updateExperience(i, 'org', e.target.value)}
+                placeholder="机构/公司（可选）"
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                value={exp.description || ''}
+                onChange={(e) => updateExperience(i, 'description', e.target.value)}
+                placeholder="简述（可选）"
+              />
             </div>
           ))}
         </CardContent>
