@@ -58,6 +58,9 @@ export async function PUT(
           body.status === 'PUBLISHED'
             ? body.publishedAt || new Date()
             : body.publishedAt,
+        accessTier: body.accessTier || 'free',
+        priceCents: body.priceCents || null,
+        mbdProductUrl: body.mbdProductUrl || null,
         categoryId: body.categoryId || null,
         tags: body.tagIds?.length
           ? { create: body.tagIds.map((id: string) => ({ tagId: id })) }

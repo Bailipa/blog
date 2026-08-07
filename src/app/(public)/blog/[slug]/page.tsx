@@ -13,6 +13,9 @@ import { CodeEnhancer } from '@/components/blog/CodeEnhancer'
 import { ViewCounter } from '@/components/blog/ViewCounter'
 import { ReadingProgress } from '@/components/blog/ReadingProgress'
 import { ShareButtons } from '@/components/blog/ShareButtons'
+import { Paywall } from '@/components/blog/Paywall'
+import { truncateMarkdown, hasPurchased } from '@/lib/paywall'
+import { auth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,11 +55,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post || post.status !== 'PUBLISHED') notFound()
 
+  const session = await auth()
+  const isLocked = post.accessTier === 'paid' && !hasPurchased(session?.user?.id ? await purchasedPosts(session.user.id) : null, post.id)
+
   let html = ''
   let toc: { id: string; text: string; level: number }[] = []
   let readTime = 0
   try {
-    html = await getPostHtml(post.content)
+    const renderContent = isLocked ? truncateMarkdown(post.content) : post.content
+    html = await getPostHtml(renderContent)
     toc = extractToc(post.content)
   } catch {
     html = '<p>文章内容解析失败</p>'
@@ -134,6 +141,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
             <MarkdownRenderer html={html} />
 
+            {isLocked && (
+              <Paywall
+                postSlug={slug}
+                postId={post.id}
+                priceCents={post.priceCents}
+                mbdProductUrl={post.mbdProductUrl}
+              />
+            )}
+
             <PostNavigation prev={prev} next={next} />
 
             {related.length > 0 && (
@@ -169,4 +185,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       />
     </article>
   )
+}
+
+async function purchasedPosts(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { purchasedPosts: true },
+  })
+  return user?.purchasedPosts ?? null
 }

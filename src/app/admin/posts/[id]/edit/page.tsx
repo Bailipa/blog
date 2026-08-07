@@ -32,6 +32,9 @@ export default async function EditPostPage({
           categoryId: post.categoryId || '',
           tagIds: post.tags.map((t) => t.tagId),
           status: post.status,
+          accessTier: post.accessTier,
+          priceCents: post.priceCents,
+          mbdProductUrl: post.mbdProductUrl,
         }}
       />
     </div>

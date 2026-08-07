@@ -22,6 +22,7 @@ const POST_SELECT = {
   viewCount: true,
   publishedAt: true,
   readingMinutes: true,
+  accessTier: true,
   category: { select: { name: true, slug: true } },
   tags: { select: { tag: { select: { name: true, slug: true } } } },
 } as const

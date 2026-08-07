@@ -400,6 +400,11 @@ body::before {
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(245, 199, 26, 0.35);
 }
+.post-card-badge--paid {
+  color: #fff;
+  background: linear-gradient(135deg, #6d28d9, #9333ea, #a855f7);
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.35);
+}
 .post-card--featured { border-color: rgba(var(--glow-rgb),0.2); }
 
 /* Body */
@@ -641,6 +646,42 @@ body::before {
 
 /* Comments */
 .article-comments-wrap { margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(var(--glow-rgb),0.1); }
+
+/* ===== Paywall ===== */
+.paywall {
+  margin: 36px 0 8px;
+  padding: 4px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.5), rgba(168, 85, 247, 0.35));
+}
+.paywall-inner {
+  border-radius: 14px;
+  padding: 26px 24px;
+  text-align: center;
+  background: var(--bg-card, #0d1020);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+.paywall-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: linear-gradient(135deg, #6d28d9, #9333ea);
+  border-radius: 999px;
+}
+.paywall-title { font-size: 1.15rem; font-weight: 700; margin: 14px 0 8px; color: var(--text-strong, #fff); }
+.paywall-desc { font-size: 0.85rem; color: var(--text-dim, #9aa3b5); margin: 0 0 18px; }
+.paywall-actions { display: flex; justify-content: center; margin-bottom: 18px; }
+.paywall-redeem { display: flex; gap: 8px; justify-content: center; max-width: 380px; margin: 0 auto; }
+.paywall-input { text-align: center; font-family: var(--font-mono, monospace); letter-spacing: 0.1em; }
+.paywall-msg { font-size: 0.8rem; margin: 12px 0 0; }
+.paywall-msg-ok { color: #34d399; }
+.paywall-msg-err { color: #f87171; }
+.paywall-login-hint { font-size: 0.78rem; color: var(--text-dim, #9aa3b5); margin: 14px 0 0; }
+.paywall-login-hint a { color: var(--gold-bright); }
 
 /* ===== Right TOC (algo-toc) ===== */
 .algo-toc { font-size: 0.875rem; }

@@ -33,6 +33,24 @@ model User {
   purchasedPosts         String?    // JSON array of post ids
 
   comments  Comment[]
+  redeemCodes RedeemCode[]
+  mbdOrders  MbdOrder[]
+}
+
+// 面包多订单记录（回调落库，用于防重复 + 对账审计）
+model MbdOrder {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  outOrderId  String?
+  userId      String?
+  postId      String?
+  amountCents Int      @default(0)
+  state       String   @default("PAID")
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([postId])
 }
 
 model VerificationToken {
@@ -58,18 +76,37 @@ model Post {
   readingMinutes Int    @default(1)
   publishedAt DateTime?
 
-  // P5+: paywall foundation (no UI yet)
-  accessTier  String     @default("free")   // "free" | "paid"
-  priceCents  Int?                         // optional single-purchase price in cents
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  categoryId  String?
-  category    Category?       @relation(fields: [categoryId], references: [id])
-  tags        PostTag[]
-  translations PostTranslation[]
-  comments    Comment[]
+  // P5+: paywall foundation
+  accessTier     String   @default("free")   // "free" | "paid"
+  priceCents     Int?                       // optional single-purchase price in cents
+  mbdProductUrl  String?                    // 面包多 (mbd.pub) 商品链接，付款后自动发兑换码
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  categoryId     String?
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  tags           PostTag[]
+  translations   PostTranslation[]
+  comments       Comment[]
+  redeemCodes    RedeemCode[]
 
   @@index([status, publishedAt])
+}
+
+// 面包多自动发货的兑换码库存。每篇付费文章有若干兑换码；买家在面包多
+// 付款后拿到一个码，回到本站 /purchase/redeem 兑换解锁。
+model RedeemCode {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  postId       String
+  status       String    @default("UNUSED")  // "UNUSED" | "USED"
+  redeemedById String?
+  redeemedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  redeemedBy   User?     @relation(fields: [redeemedById], references: [id], onDelete: SetNull)
+
+  @@index([postId])
+  @@index([status])
 }
 
 model PostTranslation {

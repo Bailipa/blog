@@ -16,6 +16,7 @@ export interface PostCardPost {
   readingMinutes?: number
   category?: { name: string; slug?: string } | null
   tags?: { tag: { name: string; slug?: string } }[]
+  accessTier?: string
 }
 
 interface PostCardProps {
@@ -75,6 +76,9 @@ export default function PostCard({ post, size = 'default' }: PostCardProps) {
 
       <div className="post-card-body">
         {featured && <span className="post-card-badge">精选</span>}
+        {post.accessTier === 'paid' && (
+          <span className="post-card-badge post-card-badge--paid">付费</span>
+        )}
         <div className="post-card-top">
           {category ? (
             <Link

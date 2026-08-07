@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { useAdminToast } from '@/components/admin/ToastProvider'
 import { generateSlug } from '@/lib/slug'
+import { RedeemCodeManager } from '@/components/admin/RedeemCodeManager'
 
 interface PostEditorProps {
   initialData?: {
@@ -27,6 +28,9 @@ interface PostEditorProps {
     categoryId: string
     tagIds: string[]
     status: string
+    accessTier?: string
+    priceCents?: number | null
+    mbdProductUrl?: string | null
   }
 }
 
@@ -39,6 +43,11 @@ export default function PostEditor({ initialData }: PostEditorProps) {
   const [content, setContent] = useState(initialData?.content || '')
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || '')
   const [status, setStatus] = useState(initialData?.status || 'DRAFT')
+  const [accessTier, setAccessTier] = useState(initialData?.accessTier || 'free')
+  const [priceCents, setPriceCents] = useState<string>(
+    initialData?.priceCents != null ? String(initialData.priceCents) : '',
+  )
+  const [mbdProductUrl, setMbdProductUrl] = useState(initialData?.mbdProductUrl || '')
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '')
   const [tagIds, setTagIds] = useState<string[]>(initialData?.tagIds || [])
   const { show } = useAdminToast()
@@ -55,6 +64,9 @@ export default function PostEditor({ initialData }: PostEditorProps) {
     content !== (initialData?.content || '') ||
     excerpt !== (initialData?.excerpt || '') ||
     status !== (initialData?.status || 'DRAFT') ||
+    accessTier !== (initialData?.accessTier || 'free') ||
+    priceCents !== String(initialData?.priceCents ?? '') ||
+    mbdProductUrl !== (initialData?.mbdProductUrl || '') ||
     categoryId !== (initialData?.categoryId || '') ||
     JSON.stringify(tagIds) !== JSON.stringify(initialData?.tagIds || [])
 
@@ -141,6 +153,9 @@ export default function PostEditor({ initialData }: PostEditorProps) {
       categoryId: categoryId || null,
       tagIds,
       status: finalStatus,
+      accessTier,
+      priceCents: priceCents ? Number(priceCents) : null,
+      mbdProductUrl: mbdProductUrl || null,
     }
 
     const url = isEdit ? `/api/posts/${initialData.id}` : '/api/posts'
@@ -265,6 +280,46 @@ export default function PostEditor({ initialData }: PostEditorProps) {
                 ))}
               </div>
             </div>
+
+            <div className="admin-editor-field">
+              <Label>付费设置</Label>
+              <Select value={accessTier} onValueChange={setAccessTier}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">免费</SelectItem>
+                  <SelectItem value="paid">付费</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {accessTier === 'paid' && (
+              <>
+                <div className="admin-editor-field">
+                  <Label>价格（元）</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={priceCents ? String(Number(priceCents) / 100) : ''}
+                    onChange={(e) => setPriceCents(e.target.value ? String(Math.round(Number(e.target.value) * 100)) : '')}
+                    placeholder="例如 6.66"
+                  />
+                </div>
+                <div className="admin-editor-field">
+                  <Label>面包多作品链接</Label>
+                  <Input
+                    value={mbdProductUrl}
+                    onChange={(e) => setMbdProductUrl(e.target.value)}
+                    placeholder="https://mbd.pub/o/bread/xxxxx"
+                  />
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 4 }}>
+                    在面包多创建作品（单价），把链接填这里。已开通闪电结算并配置回调
+                    （/api/mbd/callback）后，买家付款自动解锁；兑换码作为备用兜底。
+                  </p>
+                </div>
+                <RedeemCodeManager postId={initialData?.id} />
+              </>
+            )}
 
             {error && <p className="admin-editor-error">{error}</p>}
 

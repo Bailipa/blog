@@ -91,6 +91,10 @@ DIRECT_MAIL_FROM="${DIRECT_MAIL_FROM:-}"
 DIRECT_MAIL_FROM_NAME="${DIRECT_MAIL_FROM_NAME:-LB Blog}"
 DIRECT_MAIL_REGION="${DIRECT_MAIL_REGION:-cn-hangzhou}"
 
+# 面包多 (mbd.pub) 开发者 key —— 用于回调订单二次验证与订单查询。
+# 由 .env.local 注入；未配置时回调仍可处理（跳过二次验证），但推荐配置。
+MBD_DEV_KEY="${MBD_DEV_KEY:-}"
+
 # Admin login is username + password at /admin/login. Bootstrap by
 # running on the server after first deploy:
 #   cd /www/wwwroot/blog.dogeggcode.cyou/lb-blog

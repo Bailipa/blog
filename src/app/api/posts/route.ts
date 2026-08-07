@@ -66,6 +66,9 @@ export async function POST(req: NextRequest) {
         status: body.status || 'DRAFT',
         featured: body.featured || false,
         publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
+        accessTier: body.accessTier || 'free',
+        priceCents: body.priceCents || null,
+        mbdProductUrl: body.mbdProductUrl || null,
         categoryId: body.categoryId || null,
         tags: body.tagIds?.length
           ? { create: body.tagIds.map((id: string) => ({ tagId: id })) }
