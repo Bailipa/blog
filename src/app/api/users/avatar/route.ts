@@ -8,7 +8,7 @@
 // overwritten with the new one (we never accumulate stale files).
 
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir, unlink } from 'fs/promises'
+import { writeFile, mkdir, unlink, readdir } from 'fs/promises'
 import path from 'path'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -56,15 +56,24 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = EXT_BY_MIME[blob.type]
-    const filename = `${session.user.id}.${ext}`
+    // 用「用户id + 时间戳」命名，确保每次上传 URL 唯一 —— 否则固定名
+    // {userId}.{ext} 会让浏览器/Next Image 命中缓存，显示旧头像。
+    const ts = Date.now()
+    const filename = `${session.user.id}-${ts}.${ext}`
     await mkdir(UPLOAD_DIR, { recursive: true })
 
     // Delete any previous variant (jpg/png/webp) for this user so we don't
     // accumulate stale files. Same-user overwrite is the only case we
     // handle here.
     for (const e of Object.values(EXT_BY_MIME)) {
-      if (e === ext) continue
       await unlink(path.join(UPLOAD_DIR, `${session.user.id}.${e}`)).catch(() => {})
+      // 兼容旧格式 {userId}.{ext} 与当前格式 {userId}-{ts}.{ext} 的历史文件
+      const old = await readdir(UPLOAD_DIR).catch(() => [] as string[])
+      for (const f of old) {
+        if (f.startsWith(`${session.user.id}-`) && f.endsWith(`.${e}`)) {
+          await unlink(path.join(UPLOAD_DIR, f)).catch(() => {})
+        }
+      }
     }
 
     const bytes = Buffer.from(await blob.arrayBuffer())
@@ -100,6 +109,12 @@ export async function DELETE() {
     if (session.user.id) {
       for (const ext of Object.values(EXT_BY_MIME)) {
         await unlink(path.join(UPLOAD_DIR, `${session.user.id}.${ext}`)).catch(() => {})
+        const old = await readdir(UPLOAD_DIR).catch(() => [] as string[])
+        for (const f of old) {
+          if (f.startsWith(`${session.user.id}-`) && f.endsWith(`.${ext}`)) {
+            await unlink(path.join(UPLOAD_DIR, f)).catch(() => {})
+          }
+        }
       }
     }
     return NextResponse.json({ ok: true })
