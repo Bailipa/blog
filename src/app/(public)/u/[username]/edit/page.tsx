@@ -61,14 +61,16 @@ export default function ProfileEditPage({
   }, [sessionStatus, session, router, username, updateSession])
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
     if (sessionStatus !== 'authenticated') return
     fetch('/api/users/me')
       .then((r) => r.json())
       .then((j) => {
         const u: MeUser | null = j?.user ?? null
-        if (!u || u.username !== username) {
-          // Not your profile; bounce to the public page
+        // Ownership check by userId (not username): after a rename the
+        // URL still holds the old username until router.replace lands,
+        // so comparing usernames would wrongly kick the owner to the
+        // stale /u/{old} path (which 404s after rename).
+        if (!u || u.id !== session.user.id) {
           router.replace(`/u/${username}`)
           return
         }
@@ -79,8 +81,7 @@ export default function ProfileEditPage({
         setNewUsername(u.username)
       })
       .catch(() => {})
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [sessionStatus, username, router])
+  }, [sessionStatus, session?.user?.id, username, router])
 
   const checkUsername = useCallback(async (raw: string) => {
     if (!raw) {
