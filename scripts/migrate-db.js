@@ -31,6 +31,35 @@ const STATEMENTS = [
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_token_key" ON "VerificationToken"("token")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token")`,
+  // P5+: paywall — redeem codes (面包多卡密) + order audit
+  `CREATE TABLE IF NOT EXISTS "RedeemCode" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "code" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'UNUSED',
+    "redeemedById" TEXT,
+    "redeemedAt" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "RedeemCode_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "RedeemCode_redeemedById_fkey" FOREIGN KEY ("redeemedById") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "RedeemCode_code_key" ON "RedeemCode"("code")`,
+  `CREATE INDEX IF NOT EXISTS "RedeemCode_postId_idx" ON "RedeemCode"("postId")`,
+  `CREATE INDEX IF NOT EXISTS "RedeemCode_status_idx" ON "RedeemCode"("status")`,
+  `CREATE TABLE IF NOT EXISTS "MbdOrder" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "orderId" TEXT NOT NULL,
+    "outOrderId" TEXT,
+    "userId" TEXT,
+    "postId" TEXT,
+    "amountCents" INTEGER NOT NULL DEFAULT 0,
+    "state" TEXT NOT NULL DEFAULT 'PAID',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "MbdOrder_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "MbdOrder_orderId_key" ON "MbdOrder"("orderId")`,
+  `CREATE INDEX IF NOT EXISTS "MbdOrder_userId_idx" ON "MbdOrder"("userId")`,
+  `CREATE INDEX IF NOT EXISTS "MbdOrder_postId_idx" ON "MbdOrder"("postId")`,
 ]
 
 async function tableInfo(table) {
@@ -242,6 +271,7 @@ async function main() {
   // Post paywall foundation columns
   await addColumnIfMissing('Post', 'accessTier', "TEXT NOT NULL DEFAULT 'free'")
   await addColumnIfMissing('Post', 'priceCents', 'INTEGER')
+  await addColumnIfMissing('Post', 'mbdProductUrl', 'TEXT')
 
   // Post reading-time cache column (P6 perf: avoids shipping full markdown
   // to the client just to compute reading time)
